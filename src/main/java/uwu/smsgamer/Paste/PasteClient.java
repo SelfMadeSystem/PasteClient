@@ -8,7 +8,6 @@ import net.minecraft.util.IChatComponent;
 import uwu.smsgamer.Paste.Events.EventManager;
 import uwu.smsgamer.Paste.Events.EventTarget;
 import uwu.smsgamer.Paste.Events.Events.EventKey;
-import uwu.smsgamer.Paste.Module.Module;
 import uwu.smsgamer.Paste.Module.ModuleManager;
 
 public class PasteClient {
@@ -38,6 +37,6 @@ public class PasteClient {
     
     @EventTarget
     public void onKey(EventKey event) {
-        moduleManager.getModules().stream().filter(module -> module.getKey() == event.getKey()).forEach(Module::toggle);
+        moduleManager.getModules().stream().filter(module -> module.getKey() == event.getKey()).forEach(module -> module.toggle());
     }
 }

@@ -14,6 +14,7 @@ public class Sprint extends Module{
 
     @EventTarget
     public void onUpdate(EventUpdate event) {
+    	this.setDisplayName("Sprint");
         if(!mc.thePlayer.isCollidedHorizontally && mc.thePlayer.moveForward > 0)
             mc.thePlayer.setSprinting(true);
     }
