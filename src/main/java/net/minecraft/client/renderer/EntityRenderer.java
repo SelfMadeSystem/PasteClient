@@ -58,6 +58,8 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.biome.BiomeGenBase;
+import uwu.smsgamer.Paste.Events.Events.Event3D;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Mouse;
@@ -1475,6 +1477,9 @@ public class EntityRenderer implements IResourceManagerReloadListener
             this.renderCloudsCheck(renderglobal, partialTicks, pass);
         }
 
+        Event3D event3D = new Event3D(partialTicks);
+        event3D.call();
+        
         this.mc.mcProfiler.endStartSection("hand");
 
         if (this.renderHand)

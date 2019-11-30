@@ -185,6 +185,7 @@ import org.lwjgl.opengl.OpenGLException;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.glu.GLU;
 import uwu.smsgamer.Paste.PasteClient;
+import uwu.smsgamer.Paste.Events.Events.EventKey;
 
 public class Minecraft implements IThreadListener, IPlayerUsage
 {
@@ -589,6 +590,8 @@ public class Minecraft implements IThreadListener, IPlayerUsage
             this.gameSettings.saveOptions();
         }
 
+        PasteClient.instance.initialize();
+        
         this.renderGlobal.makeEntityOutlineShader();
     }
 
@@ -617,7 +620,7 @@ public class Minecraft implements IThreadListener, IPlayerUsage
     private void createDisplay() throws LWJGLException
     {
         Display.setResizable(true);
-        Display.setTitle("Minecraft 1.8.8");
+        Display.setTitle("Loading Paste " + PasteClient.instance.version);
 
         try
         {
@@ -1029,6 +1032,7 @@ public class Minecraft implements IThreadListener, IPlayerUsage
     {
         try
         {
+        	PasteClient.instance.uninitialize();
             this.stream.shutdownStream();
             logger.info("Stopping!");
 
@@ -1919,6 +1923,9 @@ public class Minecraft implements IThreadListener, IPlayerUsage
                     }
                     else
                     {
+                    	EventKey eventKey = new EventKey(k);
+                    	eventKey.call();
+                    	
                         if (k == 1)
                         {
                             this.displayInGameMenu();
@@ -2244,8 +2251,6 @@ public class Minecraft implements IThreadListener, IPlayerUsage
 
         this.mcProfiler.endSection();
         this.systemTime = getSystemTime();
-
-        PasteClient.INSTANCE.onUpdate();
     }
 
     /**

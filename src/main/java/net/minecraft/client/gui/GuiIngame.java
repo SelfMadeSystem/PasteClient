@@ -41,6 +41,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StringUtils;
 import net.minecraft.world.border.WorldBorder;
+import uwu.smsgamer.Paste.Events.Events.Event2D;
 
 public class GuiIngame extends Gui
 {
@@ -152,6 +153,9 @@ public class GuiIngame extends Gui
         {
             this.renderTooltip(scaledresolution, partialTicks);
         }
+        
+        Event2D event2D = new Event2D(scaledresolution.getScaledWidth(),scaledresolution.getScaledHeight());
+        event2D.call();
 
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         this.mc.getTextureManager().bindTexture(icons);
