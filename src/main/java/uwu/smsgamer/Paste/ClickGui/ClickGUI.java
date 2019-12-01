@@ -99,7 +99,8 @@ public class ClickGUI extends GuiScreen {
                     });
                 }
 
-                List<Value> values = PasteClient.instance.valueManager.getAllValuesFrom(module.getName());
+                List<Value>values = null;//PasteClient.instance.valueManager.getAllValuesFrom(module.getName())
+                // FIXME: 2019-11-30 Make .getAllValuesFrom actually work.
 
                 if (values != null) {
                     for (Value value : values) {

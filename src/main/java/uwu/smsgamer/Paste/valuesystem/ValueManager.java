@@ -47,9 +47,9 @@ public class ValueManager {
      */
 
     public List<Value> getAllValuesFrom(String name) {
-        for (Map.Entry<String, List<Value>> stringListEntry : valueMap.entrySet()) {
-            if (stringListEntry.getKey().equalsIgnoreCase(name)) return stringListEntry.getValue();
-        }
+        //for (Map.Entry<String, List<Value>> stringListEntry : valueMap.entrySet()) {
+            //if (stringListEntry.getKey().equalsIgnoreCase(name)) return stringListEntry.getValue();
+        //}
         return null;
     }
 
