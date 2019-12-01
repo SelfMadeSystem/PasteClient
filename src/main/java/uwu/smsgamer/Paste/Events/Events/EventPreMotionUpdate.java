@@ -3,9 +3,9 @@ package uwu.smsgamer.Paste.Events.Events;
 import uwu.smsgamer.Paste.Events.Event;
 
 public class EventPreMotionUpdate extends Event {
+    public double x, y, z;
     private float yaw, pitch;
     private boolean ground;
-    public double x, y, z;
 
     public EventPreMotionUpdate(float yaw, float pitch, boolean ground, double x, double y, double z) {
         this.yaw = yaw;
@@ -19,6 +19,7 @@ public class EventPreMotionUpdate extends Event {
     public float getYaw() {
         return yaw;
     }
+
     public void setYaw(float yaw) {
         this.yaw = yaw;
     }
@@ -26,6 +27,7 @@ public class EventPreMotionUpdate extends Event {
     public float getPitch() {
         return pitch;
     }
+
     public void setPitch(float pitch) {
         this.pitch = pitch;
     }
@@ -33,6 +35,7 @@ public class EventPreMotionUpdate extends Event {
     public boolean onGround() {
         return ground;
     }
+
     public void setGround(boolean ground) {
         this.ground = ground;
     }

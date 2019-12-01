@@ -1,6 +1,7 @@
 package uwu.smsgamer.Paste.Module;
 
 import net.minecraft.client.Minecraft;
+import uwu.smsgamer.Paste.Events.EventManager;
 import uwu.smsgamer.Paste.PasteClient;
 
 public class Module {
@@ -21,46 +22,61 @@ public class Module {
     }
 
     public void onEnable() {
-        PasteClient.instance.eventManager.register(this);
+        EventManager.register(this);
     }
+
     public void onDisable() {
-    	PasteClient.instance.eventManager.unregister(this);
+        EventManager.unregister(this);
     }
-    public void onToggle() {}
+
+    public void onToggle() {
+    }
+
     public void toggle() {
         toggled = !toggled;
         onToggle();
-        if(toggled)
+        if (toggled)
             onEnable();
         else
             onDisable();
     }
+
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
+
     public int getKey() {
         return key;
     }
+
     public void setKey(int key) {
         this.key = key;
     }
+
     public Category getCategory() {
         return category;
     }
+
     public void setCategory(Category category) {
         this.category = category;
     }
+
     public boolean isToggled() {
         return toggled;
     }
+
     public String getDisplayName() {
         return displayName == null ? name : displayName;
     }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
-    public void setup() {}
+
+    public void setup() {
+    }
 }

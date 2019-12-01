@@ -1,12 +1,11 @@
 package uwu.smsgamer.Paste.Events;
 
-import java.util.ArrayList;
 import java.util.EventListener;
 
-public interface UpdateListener extends EventListener{
-    public void onUpdate();
+public interface UpdateListener extends EventListener {
+    //public void onUpdate();
 
-    public static class UpdateEvent extends Event<UpdateListener>
+    /*public static class UpdateEvent extends Event<UpdateListener>
     {
         public static final UpdateEvent INSTANCE = new UpdateEvent();
 
@@ -22,5 +21,5 @@ public interface UpdateListener extends EventListener{
         {
             return UpdateListener.class;
         }
-    }
+    }*/
 }

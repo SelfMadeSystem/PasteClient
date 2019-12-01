@@ -14,6 +14,10 @@ public class EventManager {
 
     private static final Map<Class<? extends Event>, ArrayHelper<Data>> REGISTRY_MAP;
 
+    static {
+        REGISTRY_MAP = new HashMap<Class<? extends Event>, ArrayHelper<Data>>();
+    }
+
     public static void register(final Object o) {
 
         for (final Method method : o.getClass().getDeclaredMethods()) {
@@ -82,7 +86,6 @@ public class EventManager {
         }
     }
 
-
     public static void cleanMap(final boolean b) {
 
         final Iterator<Map.Entry<Class<? extends Event>, ArrayHelper<Data>>> iterator = EventManager.REGISTRY_MAP.entrySet().iterator();
@@ -139,10 +142,6 @@ public class EventManager {
     public static void shutdown() {
 
         EventManager.REGISTRY_MAP.clear();
-    }
-
-    static {
-        REGISTRY_MAP = new HashMap<Class<? extends Event>, ArrayHelper<Data>>();
     }
 
 }

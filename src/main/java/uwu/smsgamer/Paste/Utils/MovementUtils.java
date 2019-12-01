@@ -7,7 +7,7 @@ public class MovementUtils {
 
     public static float getSpeed() {
         EntityPlayerSP p = PasteClient.instance.mc.thePlayer;
-        return (float)Math.sqrt(p.motionX * p.motionX + p.motionZ * p.motionZ);
+        return (float) Math.sqrt(p.motionX * p.motionX + p.motionZ * p.motionZ);
     }
 
     public static void strafe() {
@@ -18,7 +18,7 @@ public class MovementUtils {
         EntityPlayerSP p = PasteClient.instance.mc.thePlayer;
         return p != null && (p.moveForward != 0.0F || p.moveStrafing != 0.0F);
     }
-    
+
     public static float getDirection() {
         EntityPlayerSP p = PasteClient.instance.mc.thePlayer;
         float yaw = p.rotationYaw;
@@ -50,35 +50,45 @@ public class MovementUtils {
             p.setPosition(p.posX + (-Math.sin(yaw) * speed), p.posY, p.posZ + Math.cos(yaw) * speed);
         }
     }
-    
-    public static void xzMotion(double offset, int type){
+
+    public static void xzMotion(double offset, int type) {
         EntityPlayerSP p = PasteClient.instance.mc.thePlayer;
-        double playerYaw = ((p.rotationYawHead+90) * Math.PI / 180);
-        switch (type){
-            case 0 : p.setVelocity((Math.cos(playerYaw)*offset), p.motionY, (Math.sin(playerYaw)*offset)); return;
-            case 1 : p.setVelocity(p.motionX+(Math.cos(playerYaw)*offset), p.motionY, p.motionZ+(Math.sin(playerYaw)*offset)); return;
-            case 2 : p.setVelocity(p.motionX*offset, p.motionY, p.motionZ*offset);
+        double playerYaw = ((p.rotationYawHead + 90) * Math.PI / 180);
+        switch (type) {
+            case 0:
+                p.setVelocity((Math.cos(playerYaw) * offset), p.motionY, (Math.sin(playerYaw) * offset));
+                return;
+            case 1:
+                p.setVelocity(p.motionX + (Math.cos(playerYaw) * offset), p.motionY, p.motionZ + (Math.sin(playerYaw) * offset));
+                return;
+            case 2:
+                p.setVelocity(p.motionX * offset, p.motionY, p.motionZ * offset);
         }
     }
 
-    public static void yMotion(double offset, int type){
+    public static void yMotion(double offset, int type) {
         EntityPlayerSP p = PasteClient.instance.mc.thePlayer;
-        switch (type){
-            case 0 : p.setVelocity(p.motionX, offset, p.motionZ); return;
-            case 1 : p.setVelocity(p.motionX, p.motionY+offset, p.motionZ); return;
-            case 2 : p.setVelocity(p.motionX, p.motionY*offset, p.motionZ);
+        switch (type) {
+            case 0:
+                p.setVelocity(p.motionX, offset, p.motionZ);
+                return;
+            case 1:
+                p.setVelocity(p.motionX, p.motionY + offset, p.motionZ);
+                return;
+            case 2:
+                p.setVelocity(p.motionX, p.motionY * offset, p.motionZ);
         }
     }
 
-    public static void hClip(double offset){
+    public static void hClip(double offset) {
         EntityPlayerSP p = PasteClient.instance.mc.thePlayer;
-        double playerYaw = ((p.rotationYawHead+90) * Math.PI / 180);
-        p.setPosition(p.posX+(Math.cos(playerYaw)*offset), p.posY, p.posZ+(Math.sin(playerYaw)*offset));
+        double playerYaw = ((p.rotationYawHead + 90) * Math.PI / 180);
+        p.setPosition(p.posX + (Math.cos(playerYaw) * offset), p.posY, p.posZ + (Math.sin(playerYaw) * offset));
     }
 
-    public static void vClip(double offset){
+    public static void vClip(double offset) {
         EntityPlayerSP p = PasteClient.instance.mc.thePlayer;
-        p.setPosition(p.posX, p.posY+offset, p.posZ);
+        p.setPosition(p.posX, p.posY + offset, p.posZ);
     }
 
     /*public static void damage(int dmg){

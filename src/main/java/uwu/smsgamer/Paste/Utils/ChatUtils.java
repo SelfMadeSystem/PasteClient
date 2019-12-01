@@ -6,8 +6,9 @@ import uwu.smsgamer.Paste.PasteClient;
 public class ChatUtils {
 
     public static final String colorSymbol = "§";
+    public static final char colorChar = '\u00a7';
 
-    public static void chatMessage(String msg){
+    public static void chatMessage(String msg) {
         PasteClient.instance.mc.thePlayer.addChatMessage(IChatComponent.Serializer.jsonToComponent("{text:\"" + msg + "\"}"));
     }
 }
