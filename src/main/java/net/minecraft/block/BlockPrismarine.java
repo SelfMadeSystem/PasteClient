@@ -1,30 +1,31 @@
 package net.minecraft.block;
 
-import java.util.List;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.block.state.BlockState;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.translation.I18n;
+import net.minecraft.world.IBlockAccess;
 
 public class BlockPrismarine extends Block
 {
-    public static final PropertyEnum<BlockPrismarine.EnumType> VARIANT = PropertyEnum.<BlockPrismarine.EnumType>create("variant", BlockPrismarine.EnumType.class);
+    public static final PropertyEnum<BlockPrismarine.EnumType> VARIANT = PropertyEnum.create("variant", BlockPrismarine.EnumType.class);
     public static final int ROUGH_META = BlockPrismarine.EnumType.ROUGH.getMetadata();
     public static final int BRICKS_META = BlockPrismarine.EnumType.BRICKS.getMetadata();
     public static final int DARK_META = BlockPrismarine.EnumType.DARK.getMetadata();
 
     public BlockPrismarine()
     {
-        super(Material.rock);
+        super(Material.ROCK);
         this.setDefaultState(this.blockState.getBaseState().withProperty(VARIANT, BlockPrismarine.EnumType.ROUGH));
-        this.setCreativeTab(CreativeTabs.tabBlock);
+        this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
     }
 
     /**
@@ -32,15 +33,15 @@ public class BlockPrismarine extends Block
      */
     public String getLocalizedName()
     {
-        return StatCollector.translateToLocal(this.getUnlocalizedName() + "." + BlockPrismarine.EnumType.ROUGH.getUnlocalizedName() + ".name");
+        return I18n.translateToLocal(this.getUnlocalizedName() + "." + BlockPrismarine.EnumType.ROUGH.getUnlocalizedName() + ".name");
     }
 
     /**
      * Get the MapColor for this Block and the given BlockState
      */
-    public MapColor getMapColor(IBlockState state)
+    public MapColor getMapColor(IBlockState state, IBlockAccess p_180659_2_, BlockPos p_180659_3_)
     {
-        return state.getValue(VARIANT) == BlockPrismarine.EnumType.ROUGH ? MapColor.cyanColor : MapColor.diamondColor;
+        return state.getValue(VARIANT) == BlockPrismarine.EnumType.ROUGH ? MapColor.CYAN : MapColor.DIAMOND;
     }
 
     /**
@@ -49,7 +50,7 @@ public class BlockPrismarine extends Block
      */
     public int damageDropped(IBlockState state)
     {
-        return ((BlockPrismarine.EnumType)state.getValue(VARIANT)).getMetadata();
+        return state.getValue(VARIANT).getMetadata();
     }
 
     /**
@@ -57,12 +58,12 @@ public class BlockPrismarine extends Block
      */
     public int getMetaFromState(IBlockState state)
     {
-        return ((BlockPrismarine.EnumType)state.getValue(VARIANT)).getMetadata();
+        return state.getValue(VARIANT).getMetadata();
     }
 
-    protected BlockState createBlockState()
+    protected BlockStateContainer createBlockState()
     {
-        return new BlockState(this, new IProperty[] {VARIANT});
+        return new BlockStateContainer(this, VARIANT);
     }
 
     /**
@@ -76,14 +77,14 @@ public class BlockPrismarine extends Block
     /**
      * returns a list of blocks with the same ID, but different meta (eg: wood returns 4 blocks)
      */
-    public void getSubBlocks(Item itemIn, CreativeTabs tab, List<ItemStack> list)
+    public void getSubBlocks(CreativeTabs itemIn, NonNullList<ItemStack> tab)
     {
-        list.add(new ItemStack(itemIn, 1, ROUGH_META));
-        list.add(new ItemStack(itemIn, 1, BRICKS_META));
-        list.add(new ItemStack(itemIn, 1, DARK_META));
+        tab.add(new ItemStack(this, 1, ROUGH_META));
+        tab.add(new ItemStack(this, 1, BRICKS_META));
+        tab.add(new ItemStack(this, 1, DARK_META));
     }
 
-    public static enum EnumType implements IStringSerializable
+    public enum EnumType implements IStringSerializable
     {
         ROUGH(0, "prismarine", "rough"),
         BRICKS(1, "prismarine_bricks", "bricks"),
@@ -94,7 +95,7 @@ public class BlockPrismarine extends Block
         private final String name;
         private final String unlocalizedName;
 
-        private EnumType(int meta, String name, String unlocalizedName)
+        EnumType(int meta, String name, String unlocalizedName)
         {
             this.meta = meta;
             this.name = name;

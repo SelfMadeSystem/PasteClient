@@ -2,8 +2,8 @@ package net.minecraft.command;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.world.WorldSettings;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.GameType;
 
 public class CommandDefaultGameMode extends CommandGameMode
 {
@@ -24,33 +24,35 @@ public class CommandDefaultGameMode extends CommandGameMode
     }
 
     /**
-     * Callback when the command is invoked
+     * Callback for when the command is executed
      */
-    public void processCommand(ICommandSender sender, String[] args) throws CommandException
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
         if (args.length <= 0)
         {
-            throw new WrongUsageException("commands.defaultgamemode.usage", new Object[0]);
+            throw new WrongUsageException("commands.defaultgamemode.usage");
         }
         else
         {
-            WorldSettings.GameType worldsettings$gametype = this.getGameModeFromCommand(sender, args[0]);
-            this.setGameType(worldsettings$gametype);
-            notifyOperators(sender, this, "commands.defaultgamemode.success", new Object[] {new ChatComponentTranslation("gameMode." + worldsettings$gametype.getName(), new Object[0])});
+            GameType gametype = this.getGameModeFromCommand(sender, args[0]);
+            this.setDefaultGameType(gametype, server);
+            notifyCommandListener(sender, this, "commands.defaultgamemode.success", new TextComponentTranslation("gameMode." + gametype.getName()));
         }
     }
 
-    protected void setGameType(WorldSettings.GameType p_71541_1_)
+    /**
+     * Set the default game type for the server. Also propogate the changes to all players if the server is set to force
+     * game mode
+     */
+    protected void setDefaultGameType(GameType gameType, MinecraftServer server)
     {
-        MinecraftServer minecraftserver = MinecraftServer.getServer();
-        minecraftserver.setGameType(p_71541_1_);
+        server.setGameType(gameType);
 
-        if (minecraftserver.getForceGamemode())
+        if (server.getForceGamemode())
         {
-            for (EntityPlayerMP entityplayermp : MinecraftServer.getServer().getConfigurationManager().func_181057_v())
+            for (EntityPlayerMP entityplayermp : server.getPlayerList().getPlayerList())
             {
-                entityplayermp.setGameType(p_71541_1_);
-                entityplayermp.fallDistance = 0.0F;
+                entityplayermp.setGameType(gameType);
             }
         }
     }

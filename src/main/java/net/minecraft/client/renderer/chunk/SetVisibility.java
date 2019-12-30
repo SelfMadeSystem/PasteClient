@@ -14,11 +14,11 @@ public class SetVisibility
         this.bitSet = new BitSet(COUNT_FACES * COUNT_FACES);
     }
 
-    public void setManyVisible(Set<EnumFacing> p_178620_1_)
+    public void setManyVisible(Set<EnumFacing> facing)
     {
-        for (EnumFacing enumfacing : p_178620_1_)
+        for (EnumFacing enumfacing : facing)
         {
-            for (EnumFacing enumfacing1 : p_178620_1_)
+            for (EnumFacing enumfacing1 : facing)
             {
                 this.setVisible(enumfacing, enumfacing1, true);
             }
@@ -66,7 +66,7 @@ public class SetVisibility
                 else
                 {
                     boolean flag = this.isVisible(enumfacing2, enumfacing1);
-                    stringbuilder.append(' ').append((char)(flag ? 'Y' : 'n'));
+                    stringbuilder.append(' ').append(flag ? 'Y' : 'n');
                 }
             }
 

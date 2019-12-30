@@ -6,14 +6,14 @@ public class UserListEntry<T>
 {
     private final T value;
 
-    public UserListEntry(T p_i1146_1_)
+    public UserListEntry(T valueIn)
     {
-        this.value = p_i1146_1_;
+        this.value = valueIn;
     }
 
-    protected UserListEntry(T p_i1147_1_, JsonObject p_i1147_2_)
+    protected UserListEntry(T valueIn, JsonObject json)
     {
-        this.value = p_i1147_1_;
+        this.value = valueIn;
     }
 
     T getValue()

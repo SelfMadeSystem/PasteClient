@@ -3,15 +3,24 @@ package net.minecraft.scoreboard;
 import com.google.common.collect.Maps;
 import java.util.Collection;
 import java.util.Map;
+import javax.annotation.Nullable;
+import net.minecraft.util.text.TextFormatting;
 
 public abstract class Team
 {
     /**
      * Same as ==
      */
-    public boolean isSameTeam(Team other)
+    public boolean isSameTeam(@Nullable Team other)
     {
-        return other == null ? false : this == other;
+        if (other == null)
+        {
+            return false;
+        }
+        else
+        {
+            return this == other;
+        }
     }
 
     /**
@@ -27,41 +36,82 @@ public abstract class Team
 
     public abstract Team.EnumVisible getNameTagVisibility();
 
+    public abstract TextFormatting getChatFormat();
+
     public abstract Collection<String> getMembershipCollection();
 
     public abstract Team.EnumVisible getDeathMessageVisibility();
 
-    public static enum EnumVisible
+    public abstract Team.CollisionRule getCollisionRule();
+
+    public enum CollisionRule
+    {
+        ALWAYS("always", 0),
+        NEVER("never", 1),
+        HIDE_FOR_OTHER_TEAMS("pushOtherTeams", 2),
+        HIDE_FOR_OWN_TEAM("pushOwnTeam", 3);
+
+        private static final Map<String, Team.CollisionRule> nameMap = Maps.newHashMap();
+        public final String name;
+        public final int id;
+
+        public static String[] getNames()
+        {
+            return nameMap.keySet().toArray(new String[nameMap.size()]);
+        }
+
+        @Nullable
+        public static Team.CollisionRule getByName(String nameIn)
+        {
+            return nameMap.get(nameIn);
+        }
+
+        CollisionRule(String nameIn, int idIn)
+        {
+            this.name = nameIn;
+            this.id = idIn;
+        }
+
+        static {
+            for (Team.CollisionRule team$collisionrule : values())
+            {
+                nameMap.put(team$collisionrule.name, team$collisionrule);
+            }
+        }
+    }
+
+    public enum EnumVisible
     {
         ALWAYS("always", 0),
         NEVER("never", 1),
         HIDE_FOR_OTHER_TEAMS("hideForOtherTeams", 2),
         HIDE_FOR_OWN_TEAM("hideForOwnTeam", 3);
 
-        private static Map<String, Team.EnumVisible> field_178828_g = Maps.<String, Team.EnumVisible>newHashMap();
-        public final String field_178830_e;
-        public final int field_178827_f;
+        private static final Map<String, Team.EnumVisible> nameMap = Maps.newHashMap();
+        public final String internalName;
+        public final int id;
 
-        public static String[] func_178825_a()
+        public static String[] getNames()
         {
-            return (String[])field_178828_g.keySet().toArray(new String[field_178828_g.size()]);
+            return nameMap.keySet().toArray(new String[nameMap.size()]);
         }
 
-        public static Team.EnumVisible func_178824_a(String p_178824_0_)
+        @Nullable
+        public static Team.EnumVisible getByName(String nameIn)
         {
-            return (Team.EnumVisible)field_178828_g.get(p_178824_0_);
+            return nameMap.get(nameIn);
         }
 
-        private EnumVisible(String p_i45550_3_, int p_i45550_4_)
+        EnumVisible(String nameIn, int idIn)
         {
-            this.field_178830_e = p_i45550_3_;
-            this.field_178827_f = p_i45550_4_;
+            this.internalName = nameIn;
+            this.id = idIn;
         }
 
         static {
             for (Team.EnumVisible team$enumvisible : values())
             {
-                field_178828_g.put(team$enumvisible.field_178830_e, team$enumvisible);
+                nameMap.put(team$enumvisible.internalName, team$enumvisible);
             }
         }
     }

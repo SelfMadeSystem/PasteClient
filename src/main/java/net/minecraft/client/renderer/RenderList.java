@@ -2,12 +2,11 @@ package net.minecraft.client.renderer;
 
 import net.minecraft.client.renderer.chunk.ListedRenderChunk;
 import net.minecraft.client.renderer.chunk.RenderChunk;
-import net.minecraft.util.EnumWorldBlockLayer;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.util.BlockRenderLayer;
 
 public class RenderList extends ChunkRenderContainer
 {
-    public void renderChunkLayer(EnumWorldBlockLayer layer)
+    public void renderChunkLayer(BlockRenderLayer layer)
     {
         if (this.initialized)
         {
@@ -16,7 +15,7 @@ public class RenderList extends ChunkRenderContainer
                 ListedRenderChunk listedrenderchunk = (ListedRenderChunk)renderchunk;
                 GlStateManager.pushMatrix();
                 this.preRenderChunk(renderchunk);
-                GL11.glCallList(listedrenderchunk.getDisplayList(layer, listedrenderchunk.getCompiledChunk()));
+                GlStateManager.callList(listedrenderchunk.getDisplayList(layer, listedrenderchunk.getCompiledChunk()));
                 GlStateManager.popMatrix();
             }
 

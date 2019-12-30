@@ -10,10 +10,15 @@ public class I18n
     }
 
     /**
-     * format(a, b) is equivalent to String.format(translate(a), b). Args: translationKey, params...
+     * Translates the given string and then formats it. Equivalent to String.format(translate(key), parameters).
      */
     public static String format(String translateKey, Object... parameters)
     {
         return i18nLocale.formatMessage(translateKey, parameters);
+    }
+
+    public static boolean hasKey(String key)
+    {
+        return i18nLocale.hasKey(key);
     }
 }

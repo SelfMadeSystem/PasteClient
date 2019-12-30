@@ -1,18 +1,19 @@
 package net.minecraft.client.renderer.texture;
 
 import java.awt.image.BufferedImage;
+import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.data.TextureMetadataSection;
 import net.minecraft.util.ResourceLocation;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class SimpleTexture extends AbstractTexture
 {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger LOG = LogManager.getLogger();
     protected final ResourceLocation textureLocation;
 
     public SimpleTexture(ResourceLocation textureResourceLocation)
@@ -23,13 +24,12 @@ public class SimpleTexture extends AbstractTexture
     public void loadTexture(IResourceManager resourceManager) throws IOException
     {
         this.deleteGlTexture();
-        InputStream inputstream = null;
+        IResource iresource = null;
 
         try
         {
-            IResource iresource = resourceManager.getResource(this.textureLocation);
-            inputstream = iresource.getInputStream();
-            BufferedImage bufferedimage = TextureUtil.readBufferedImage(inputstream);
+            iresource = resourceManager.getResource(this.textureLocation);
+            BufferedImage bufferedimage = TextureUtil.readBufferedImage(iresource.getInputStream());
             boolean flag = false;
             boolean flag1 = false;
 
@@ -37,7 +37,7 @@ public class SimpleTexture extends AbstractTexture
             {
                 try
                 {
-                    TextureMetadataSection texturemetadatasection = (TextureMetadataSection)iresource.getMetadata("texture");
+                    TextureMetadataSection texturemetadatasection = iresource.getMetadata("texture");
 
                     if (texturemetadatasection != null)
                     {
@@ -47,7 +47,7 @@ public class SimpleTexture extends AbstractTexture
                 }
                 catch (RuntimeException runtimeexception)
                 {
-                    logger.warn((String)("Failed reading metadata of: " + this.textureLocation), (Throwable)runtimeexception);
+                    LOG.warn("Failed reading metadata of: {}", this.textureLocation, runtimeexception);
                 }
             }
 
@@ -55,10 +55,7 @@ public class SimpleTexture extends AbstractTexture
         }
         finally
         {
-            if (inputstream != null)
-            {
-                inputstream.close();
-            }
+            IOUtils.closeQuietly(iresource);
         }
     }
 }

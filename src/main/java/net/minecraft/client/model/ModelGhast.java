@@ -3,7 +3,7 @@ package net.minecraft.client.model;
 import java.util.Random;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 
 public class ModelGhast extends ModelBase
 {
@@ -15,7 +15,7 @@ public class ModelGhast extends ModelBase
         int i = -16;
         this.body = new ModelRenderer(this, 0, 0);
         this.body.addBox(-8.0F, -8.0F, -8.0F, 16, 16, 16);
-        this.body.rotationPointY += (float)(24 + i);
+        this.body.rotationPointY += 8.0F;
         Random random = new Random(1660L);
 
         for (int j = 0; j < this.tentacles.length; ++j)
@@ -27,7 +27,7 @@ public class ModelGhast extends ModelBase
             this.tentacles[j].addBox(-1.0F, 0.0F, -1.0F, 2, k, 2);
             this.tentacles[j].rotationPointX = f;
             this.tentacles[j].rotationPointZ = f1;
-            this.tentacles[j].rotationPointY = (float)(31 + i);
+            this.tentacles[j].rotationPointY = 15.0F;
         }
     }
 
@@ -36,20 +36,20 @@ public class ModelGhast extends ModelBase
      * and legs, where par1 represents the time(so that arms and legs swing back and forth) and par2 represents how
      * "far" arms and legs can swing at most.
      */
-    public void setRotationAngles(float p_78087_1_, float p_78087_2_, float p_78087_3_, float p_78087_4_, float p_78087_5_, float p_78087_6_, Entity entityIn)
+    public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn)
     {
         for (int i = 0; i < this.tentacles.length; ++i)
         {
-            this.tentacles[i].rotateAngleX = 0.2F * MathHelper.sin(p_78087_3_ * 0.3F + (float)i) + 0.4F;
+            this.tentacles[i].rotateAngleX = 0.2F * MathHelper.sin(ageInTicks * 0.3F + (float)i) + 0.4F;
         }
     }
 
     /**
      * Sets the models various rotation angles then renders the model.
      */
-    public void render(Entity entityIn, float p_78088_2_, float p_78088_3_, float p_78088_4_, float p_78088_5_, float p_78088_6_, float scale)
+    public void render(Entity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
-        this.setRotationAngles(p_78088_2_, p_78088_3_, p_78088_4_, p_78088_5_, p_78088_6_, scale, entityIn);
+        this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entityIn);
         GlStateManager.pushMatrix();
         GlStateManager.translate(0.0F, 0.6F, 0.0F);
         this.body.render(scale);

@@ -31,12 +31,12 @@ public class GenLayerZoom extends GenLayer
 
             for (int k2 = aint[i2 + 0 + (k1 + 1) * k]; i2 < k - 1; ++i2)
             {
-                this.initChunkSeed((long)(i2 + i << 1), (long)(k1 + j << 1));
+                this.initChunkSeed(i2 + i << 1, k1 + j << 1);
                 int l2 = aint[i2 + 1 + (k1 + 0) * k];
                 int i3 = aint[i2 + 1 + (k1 + 1) * k];
                 aint1[l1] = j2;
-                aint1[l1++ + i1] = this.selectRandom(new int[] {j2, k2});
-                aint1[l1] = this.selectRandom(new int[] {j2, l2});
+                aint1[l1++ + i1] = this.selectRandom(j2, k2);
+                aint1[l1] = this.selectRandom(j2, l2);
                 aint1[l1++ + i1] = this.selectModeOrRandom(j2, l2, k2, i3);
                 j2 = l2;
                 k2 = i3;

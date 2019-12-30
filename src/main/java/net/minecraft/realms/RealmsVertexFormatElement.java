@@ -4,11 +4,11 @@ import net.minecraft.client.renderer.vertex.VertexFormatElement;
 
 public class RealmsVertexFormatElement
 {
-    private VertexFormatElement v;
+    private final VertexFormatElement v;
 
-    public RealmsVertexFormatElement(VertexFormatElement p_i46463_1_)
+    public RealmsVertexFormatElement(VertexFormatElement vIn)
     {
-        this.v = p_i46463_1_;
+        this.v = vIn;
     }
 
     public VertexFormatElement getVertexFormatElement()

@@ -1,25 +1,24 @@
 package net.minecraft.block;
 
-import java.util.List;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.block.state.BlockState;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.NonNullList;
 
 public class BlockRedSandstone extends Block
 {
-    public static final PropertyEnum<BlockRedSandstone.EnumType> TYPE = PropertyEnum.<BlockRedSandstone.EnumType>create("type", BlockRedSandstone.EnumType.class);
+    public static final PropertyEnum<BlockRedSandstone.EnumType> TYPE = PropertyEnum.create("type", BlockRedSandstone.EnumType.class);
 
     public BlockRedSandstone()
     {
-        super(Material.rock, BlockSand.EnumType.RED_SAND.getMapColor());
+        super(Material.ROCK, BlockSand.EnumType.RED_SAND.getMapColor());
         this.setDefaultState(this.blockState.getBaseState().withProperty(TYPE, BlockRedSandstone.EnumType.DEFAULT));
-        this.setCreativeTab(CreativeTabs.tabBlock);
+        this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
     }
 
     /**
@@ -28,17 +27,17 @@ public class BlockRedSandstone extends Block
      */
     public int damageDropped(IBlockState state)
     {
-        return ((BlockRedSandstone.EnumType)state.getValue(TYPE)).getMetadata();
+        return state.getValue(TYPE).getMetadata();
     }
 
     /**
      * returns a list of blocks with the same ID, but different meta (eg: wood returns 4 blocks)
      */
-    public void getSubBlocks(Item itemIn, CreativeTabs tab, List<ItemStack> list)
+    public void getSubBlocks(CreativeTabs itemIn, NonNullList<ItemStack> tab)
     {
         for (BlockRedSandstone.EnumType blockredsandstone$enumtype : BlockRedSandstone.EnumType.values())
         {
-            list.add(new ItemStack(itemIn, 1, blockredsandstone$enumtype.getMetadata()));
+            tab.add(new ItemStack(this, 1, blockredsandstone$enumtype.getMetadata()));
         }
     }
 
@@ -55,15 +54,15 @@ public class BlockRedSandstone extends Block
      */
     public int getMetaFromState(IBlockState state)
     {
-        return ((BlockRedSandstone.EnumType)state.getValue(TYPE)).getMetadata();
+        return state.getValue(TYPE).getMetadata();
     }
 
-    protected BlockState createBlockState()
+    protected BlockStateContainer createBlockState()
     {
-        return new BlockState(this, new IProperty[] {TYPE});
+        return new BlockStateContainer(this, TYPE);
     }
 
-    public static enum EnumType implements IStringSerializable
+    public enum EnumType implements IStringSerializable
     {
         DEFAULT(0, "red_sandstone", "default"),
         CHISELED(1, "chiseled_red_sandstone", "chiseled"),
@@ -74,7 +73,7 @@ public class BlockRedSandstone extends Block
         private final String name;
         private final String unlocalizedName;
 
-        private EnumType(int meta, String name, String unlocalizedName)
+        EnumType(int meta, String name, String unlocalizedName)
         {
             this.meta = meta;
             this.name = name;

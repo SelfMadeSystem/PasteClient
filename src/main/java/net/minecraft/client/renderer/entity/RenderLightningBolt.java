@@ -1,9 +1,10 @@
 package net.minecraft.client.renderer.entity;
 
 import java.util.Random;
+import javax.annotation.Nullable;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.util.ResourceLocation;
@@ -16,19 +17,16 @@ public class RenderLightningBolt extends Render<EntityLightningBolt>
     }
 
     /**
-     * Actually renders the given argument. This is a synthetic bridge method, always casting down its argument and then
-     * handing it off to a worker function which does the actual work. In all probabilty, the class Render is generic
-     * (Render<T extends Entity>) and this method has signature public void doRender(T entity, double d, double d1,
-     * double d2, float f, float f1). But JAD is pre 1.5 so doe
+     * Renders the desired {@code T} type Entity.
      */
     public void doRender(EntityLightningBolt entity, double x, double y, double z, float entityYaw, float partialTicks)
     {
         Tessellator tessellator = Tessellator.getInstance();
-        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        BufferBuilder bufferbuilder = tessellator.getBuffer();
         GlStateManager.disableTexture2D();
         GlStateManager.disableLighting();
         GlStateManager.enableBlend();
-        GlStateManager.blendFunc(770, 1);
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
         double[] adouble = new double[8];
         double[] adouble1 = new double[8];
         double d0 = 0.0D;
@@ -39,8 +37,8 @@ public class RenderLightningBolt extends Render<EntityLightningBolt>
         {
             adouble[i] = d0;
             adouble1[i] = d1;
-            d0 += (double)(random.nextInt(11) - 5);
-            d1 += (double)(random.nextInt(11) - 5);
+            d0 += random.nextInt(11) - 5;
+            d1 += random.nextInt(11) - 5;
         }
 
         for (int k1 = 0; k1 < 4; ++k1)
@@ -72,16 +70,16 @@ public class RenderLightningBolt extends Render<EntityLightningBolt>
 
                     if (j == 0)
                     {
-                        d2 += (double)(random1.nextInt(11) - 5);
-                        d3 += (double)(random1.nextInt(11) - 5);
+                        d2 += random1.nextInt(11) - 5;
+                        d3 += random1.nextInt(11) - 5;
                     }
                     else
                     {
-                        d2 += (double)(random1.nextInt(31) - 15);
-                        d3 += (double)(random1.nextInt(31) - 15);
+                        d2 += random1.nextInt(31) - 15;
+                        d3 += random1.nextInt(31) - 15;
                     }
 
-                    worldrenderer.begin(5, DefaultVertexFormats.POSITION_COLOR);
+                    bufferbuilder.begin(5, DefaultVertexFormats.POSITION_COLOR);
                     float f = 0.5F;
                     float f1 = 0.45F;
                     float f2 = 0.45F;
@@ -128,8 +126,8 @@ public class RenderLightningBolt extends Render<EntityLightningBolt>
                             d11 += d7 * 2.0D;
                         }
 
-                        worldrenderer.pos(d10 + d2, y + (double)(i1 * 16), d11 + d3).color(0.45F, 0.45F, 0.5F, 0.3F).endVertex();
-                        worldrenderer.pos(d8 + d4, y + (double)((i1 + 1) * 16), d9 + d5).color(0.45F, 0.45F, 0.5F, 0.3F).endVertex();
+                        bufferbuilder.pos(d10 + d2, y + (double)(i1 * 16), d11 + d3).color(0.45F, 0.45F, 0.5F, 0.3F).endVertex();
+                        bufferbuilder.pos(d8 + d4, y + (double)((i1 + 1) * 16), d9 + d5).color(0.45F, 0.45F, 0.5F, 0.3F).endVertex();
                     }
 
                     tessellator.draw();
@@ -141,6 +139,8 @@ public class RenderLightningBolt extends Render<EntityLightningBolt>
         GlStateManager.enableLighting();
         GlStateManager.enableTexture2D();
     }
+
+    @Nullable
 
     /**
      * Returns the location of an entity's texture. Doesn't seem to be called unless you call Render.bindEntityTexture.

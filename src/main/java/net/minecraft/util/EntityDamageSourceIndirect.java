@@ -1,24 +1,30 @@
 package net.minecraft.util;
 
+import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.translation.I18n;
 
 public class EntityDamageSourceIndirect extends EntityDamageSource
 {
-    private Entity indirectEntity;
+    private final Entity indirectEntity;
 
-    public EntityDamageSourceIndirect(String p_i1568_1_, Entity p_i1568_2_, Entity indirectEntityIn)
+    public EntityDamageSourceIndirect(String damageTypeIn, Entity source, @Nullable Entity indirectEntityIn)
     {
-        super(p_i1568_1_, p_i1568_2_);
+        super(damageTypeIn, source);
         this.indirectEntity = indirectEntityIn;
     }
 
+    @Nullable
     public Entity getSourceOfDamage()
     {
         return this.damageSourceEntity;
     }
 
+    @Nullable
     public Entity getEntity()
     {
         return this.indirectEntity;
@@ -27,12 +33,12 @@ public class EntityDamageSourceIndirect extends EntityDamageSource
     /**
      * Gets the death message that is displayed when the player dies
      */
-    public IChatComponent getDeathMessage(EntityLivingBase p_151519_1_)
+    public ITextComponent getDeathMessage(EntityLivingBase entityLivingBaseIn)
     {
-        IChatComponent ichatcomponent = this.indirectEntity == null ? this.damageSourceEntity.getDisplayName() : this.indirectEntity.getDisplayName();
-        ItemStack itemstack = this.indirectEntity instanceof EntityLivingBase ? ((EntityLivingBase)this.indirectEntity).getHeldItem() : null;
+        ITextComponent itextcomponent = this.indirectEntity == null ? this.damageSourceEntity.getDisplayName() : this.indirectEntity.getDisplayName();
+        ItemStack itemstack = this.indirectEntity instanceof EntityLivingBase ? ((EntityLivingBase)this.indirectEntity).getHeldItemMainhand() : ItemStack.field_190927_a;
         String s = "death.attack." + this.damageType;
         String s1 = s + ".item";
-        return itemstack != null && itemstack.hasDisplayName() && StatCollector.canTranslate(s1) ? new ChatComponentTranslation(s1, new Object[] {p_151519_1_.getDisplayName(), ichatcomponent, itemstack.getChatComponent()}): new ChatComponentTranslation(s, new Object[] {p_151519_1_.getDisplayName(), ichatcomponent});
+        return !itemstack.func_190926_b() && itemstack.hasDisplayName() && I18n.canTranslate(s1) ? new TextComponentTranslation(s1, entityLivingBaseIn.getDisplayName(), itextcomponent, itemstack.getTextComponent()) : new TextComponentTranslation(s, entityLivingBaseIn.getDisplayName(), itextcomponent);
     }
 }

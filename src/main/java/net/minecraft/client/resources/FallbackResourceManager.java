@@ -6,20 +6,21 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.client.resources.data.IMetadataSerializer;
+import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class FallbackResourceManager implements IResourceManager
 {
-    private static final Logger logger = LogManager.getLogger();
-    protected final List<IResourcePack> resourcePacks = Lists.<IResourcePack>newArrayList();
-    private final IMetadataSerializer frmMetadataSerializer;
+    private static final Logger LOGGER = LogManager.getLogger();
+    protected final List<IResourcePack> resourcePacks = Lists.newArrayList();
+    private final MetadataSerializer frmMetadataSerializer;
 
-    public FallbackResourceManager(IMetadataSerializer frmMetadataSerializerIn)
+    public FallbackResourceManager(MetadataSerializer frmMetadataSerializerIn)
     {
         this.frmMetadataSerializer = frmMetadataSerializerIn;
     }
@@ -31,17 +32,18 @@ public class FallbackResourceManager implements IResourceManager
 
     public Set<String> getResourceDomains()
     {
-        return null;
+        return Collections.emptySet();
     }
 
     public IResource getResource(ResourceLocation location) throws IOException
     {
+        this.checkResourcePath(location);
         IResourcePack iresourcepack = null;
         ResourceLocation resourcelocation = getLocationMcmeta(location);
 
         for (int i = this.resourcePacks.size() - 1; i >= 0; --i)
         {
-            IResourcePack iresourcepack1 = (IResourcePack)this.resourcePacks.get(i);
+            IResourcePack iresourcepack1 = this.resourcePacks.get(i);
 
             if (iresourcepack == null && iresourcepack1.resourceExists(resourcelocation))
             {
@@ -67,12 +69,21 @@ public class FallbackResourceManager implements IResourceManager
     protected InputStream getInputStream(ResourceLocation location, IResourcePack resourcePack) throws IOException
     {
         InputStream inputstream = resourcePack.getInputStream(location);
-        return (InputStream)(logger.isDebugEnabled() ? new FallbackResourceManager.InputStreamLeakedResourceLogger(inputstream, location, resourcePack.getPackName()) : inputstream);
+        return LOGGER.isDebugEnabled() ? new InputStreamLeakedResourceLogger(inputstream, location, resourcePack.getPackName()) : inputstream;
+    }
+
+    private void checkResourcePath(ResourceLocation p_188552_1_) throws IOException
+    {
+        if (p_188552_1_.getResourcePath().contains(".."))
+        {
+            throw new IOException("Invalid relative path to resource: " + p_188552_1_);
+        }
     }
 
     public List<IResource> getAllResources(ResourceLocation location) throws IOException
     {
-        List<IResource> list = Lists.<IResource>newArrayList();
+        this.checkResourcePath(location);
+        List<IResource> list = Lists.newArrayList();
         ResourceLocation resourcelocation = getLocationMcmeta(location);
 
         for (IResourcePack iresourcepack : this.resourcePacks)
@@ -101,29 +112,29 @@ public class FallbackResourceManager implements IResourceManager
 
     static class InputStreamLeakedResourceLogger extends InputStream
     {
-        private final InputStream field_177330_a;
-        private final String field_177328_b;
-        private boolean field_177329_c = false;
+        private final InputStream inputStream;
+        private final String message;
+        private boolean isClosed;
 
-        public InputStreamLeakedResourceLogger(InputStream p_i46093_1_, ResourceLocation location, String p_i46093_3_)
+        public InputStreamLeakedResourceLogger(InputStream p_i46093_1_, ResourceLocation location, String resourcePack)
         {
-            this.field_177330_a = p_i46093_1_;
+            this.inputStream = p_i46093_1_;
             ByteArrayOutputStream bytearrayoutputstream = new ByteArrayOutputStream();
             (new Exception()).printStackTrace(new PrintStream(bytearrayoutputstream));
-            this.field_177328_b = "Leaked resource: \'" + location + "\' loaded from pack: \'" + p_i46093_3_ + "\'\n" + bytearrayoutputstream.toString();
+            this.message = "Leaked resource: '" + location + "' loaded from pack: '" + resourcePack + "'\n" + bytearrayoutputstream;
         }
 
         public void close() throws IOException
         {
-            this.field_177330_a.close();
-            this.field_177329_c = true;
+            this.inputStream.close();
+            this.isClosed = true;
         }
 
         protected void finalize() throws Throwable
         {
-            if (!this.field_177329_c)
+            if (!this.isClosed)
             {
-                FallbackResourceManager.logger.warn(this.field_177328_b);
+                FallbackResourceManager.LOGGER.warn(this.message);
             }
 
             super.finalize();
@@ -131,7 +142,7 @@ public class FallbackResourceManager implements IResourceManager
 
         public int read() throws IOException
         {
-            return this.field_177330_a.read();
+            return this.inputStream.read();
         }
     }
 }

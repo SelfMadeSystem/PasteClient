@@ -7,8 +7,8 @@ import net.minecraft.util.ResourceLocation;
 
 public class RenderLeashKnot extends Render<EntityLeashKnot>
 {
-    private static final ResourceLocation leashKnotTextures = new ResourceLocation("textures/entity/lead_knot.png");
-    private ModelLeashKnot leashKnotModel = new ModelLeashKnot();
+    private static final ResourceLocation LEASH_KNOT_TEXTURES = new ResourceLocation("textures/entity/lead_knot.png");
+    private final ModelLeashKnot leashKnotModel = new ModelLeashKnot();
 
     public RenderLeashKnot(RenderManager renderManagerIn)
     {
@@ -16,10 +16,7 @@ public class RenderLeashKnot extends Render<EntityLeashKnot>
     }
 
     /**
-     * Actually renders the given argument. This is a synthetic bridge method, always casting down its argument and then
-     * handing it off to a worker function which does the actual work. In all probabilty, the class Render is generic
-     * (Render<T extends Entity>) and this method has signature public void doRender(T entity, double d, double d1,
-     * double d2, float f, float f1). But JAD is pre 1.5 so doe
+     * Renders the desired {@code T} type Entity.
      */
     public void doRender(EntityLeashKnot entity, double x, double y, double z, float entityYaw, float partialTicks)
     {
@@ -31,7 +28,21 @@ public class RenderLeashKnot extends Render<EntityLeashKnot>
         GlStateManager.scale(-1.0F, -1.0F, 1.0F);
         GlStateManager.enableAlpha();
         this.bindEntityTexture(entity);
-        this.leashKnotModel.render(entity, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, f);
+
+        if (this.renderOutlines)
+        {
+            GlStateManager.enableColorMaterial();
+            GlStateManager.enableOutlineMode(this.getTeamColor(entity));
+        }
+
+        this.leashKnotModel.render(entity, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+
+        if (this.renderOutlines)
+        {
+            GlStateManager.disableOutlineMode();
+            GlStateManager.disableColorMaterial();
+        }
+
         GlStateManager.popMatrix();
         super.doRender(entity, x, y, z, entityYaw, partialTicks);
     }
@@ -41,6 +52,6 @@ public class RenderLeashKnot extends Render<EntityLeashKnot>
      */
     protected ResourceLocation getEntityTexture(EntityLeashKnot entity)
     {
-        return leashKnotTextures;
+        return LEASH_KNOT_TEXTURES;
     }
 }

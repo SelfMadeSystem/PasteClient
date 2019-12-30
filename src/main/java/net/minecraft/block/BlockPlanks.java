@@ -1,26 +1,27 @@
 package net.minecraft.block;
 
-import java.util.List;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.block.state.BlockState;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 
 public class BlockPlanks extends Block
 {
-    public static final PropertyEnum<BlockPlanks.EnumType> VARIANT = PropertyEnum.<BlockPlanks.EnumType>create("variant", BlockPlanks.EnumType.class);
+    public static final PropertyEnum<BlockPlanks.EnumType> VARIANT = PropertyEnum.create("variant", BlockPlanks.EnumType.class);
 
     public BlockPlanks()
     {
-        super(Material.wood);
+        super(Material.WOOD);
         this.setDefaultState(this.blockState.getBaseState().withProperty(VARIANT, BlockPlanks.EnumType.OAK));
-        this.setCreativeTab(CreativeTabs.tabBlock);
+        this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
     }
 
     /**
@@ -29,17 +30,17 @@ public class BlockPlanks extends Block
      */
     public int damageDropped(IBlockState state)
     {
-        return ((BlockPlanks.EnumType)state.getValue(VARIANT)).getMetadata();
+        return state.getValue(VARIANT).getMetadata();
     }
 
     /**
      * returns a list of blocks with the same ID, but different meta (eg: wood returns 4 blocks)
      */
-    public void getSubBlocks(Item itemIn, CreativeTabs tab, List<ItemStack> list)
+    public void getSubBlocks(CreativeTabs itemIn, NonNullList<ItemStack> tab)
     {
         for (BlockPlanks.EnumType blockplanks$enumtype : BlockPlanks.EnumType.values())
         {
-            list.add(new ItemStack(itemIn, 1, blockplanks$enumtype.getMetadata()));
+            tab.add(new ItemStack(this, 1, blockplanks$enumtype.getMetadata()));
         }
     }
 
@@ -54,9 +55,9 @@ public class BlockPlanks extends Block
     /**
      * Get the MapColor for this Block and the given BlockState
      */
-    public MapColor getMapColor(IBlockState state)
+    public MapColor getMapColor(IBlockState state, IBlockAccess p_180659_2_, BlockPos p_180659_3_)
     {
-        return ((BlockPlanks.EnumType)state.getValue(VARIANT)).func_181070_c();
+        return state.getValue(VARIANT).getMapColor();
     }
 
     /**
@@ -64,40 +65,40 @@ public class BlockPlanks extends Block
      */
     public int getMetaFromState(IBlockState state)
     {
-        return ((BlockPlanks.EnumType)state.getValue(VARIANT)).getMetadata();
+        return state.getValue(VARIANT).getMetadata();
     }
 
-    protected BlockState createBlockState()
+    protected BlockStateContainer createBlockState()
     {
-        return new BlockState(this, new IProperty[] {VARIANT});
+        return new BlockStateContainer(this, VARIANT);
     }
 
-    public static enum EnumType implements IStringSerializable
+    public enum EnumType implements IStringSerializable
     {
-        OAK(0, "oak", MapColor.woodColor),
-        SPRUCE(1, "spruce", MapColor.obsidianColor),
-        BIRCH(2, "birch", MapColor.sandColor),
-        JUNGLE(3, "jungle", MapColor.dirtColor),
-        ACACIA(4, "acacia", MapColor.adobeColor),
-        DARK_OAK(5, "dark_oak", "big_oak", MapColor.brownColor);
+        OAK(0, "oak", MapColor.WOOD),
+        SPRUCE(1, "spruce", MapColor.OBSIDIAN),
+        BIRCH(2, "birch", MapColor.SAND),
+        JUNGLE(3, "jungle", MapColor.DIRT),
+        ACACIA(4, "acacia", MapColor.ADOBE),
+        DARK_OAK(5, "dark_oak", "big_oak", MapColor.BROWN);
 
         private static final BlockPlanks.EnumType[] META_LOOKUP = new BlockPlanks.EnumType[values().length];
         private final int meta;
         private final String name;
         private final String unlocalizedName;
-        private final MapColor field_181071_k;
+        private final MapColor mapColor;
 
-        private EnumType(int p_i46388_3_, String p_i46388_4_, MapColor p_i46388_5_)
+        EnumType(int metaIn, String nameIn, MapColor mapColorIn)
         {
-            this(p_i46388_3_, p_i46388_4_, p_i46388_4_, p_i46388_5_);
+            this(metaIn, nameIn, nameIn, mapColorIn);
         }
 
-        private EnumType(int p_i46389_3_, String p_i46389_4_, String p_i46389_5_, MapColor p_i46389_6_)
+        EnumType(int metaIn, String nameIn, String unlocalizedNameIn, MapColor mapColorIn)
         {
-            this.meta = p_i46389_3_;
-            this.name = p_i46389_4_;
-            this.unlocalizedName = p_i46389_5_;
-            this.field_181071_k = p_i46389_6_;
+            this.meta = metaIn;
+            this.name = nameIn;
+            this.unlocalizedName = unlocalizedNameIn;
+            this.mapColor = mapColorIn;
         }
 
         public int getMetadata()
@@ -105,9 +106,9 @@ public class BlockPlanks extends Block
             return this.meta;
         }
 
-        public MapColor func_181070_c()
+        public MapColor getMapColor()
         {
-            return this.field_181071_k;
+            return this.mapColor;
         }
 
         public String toString()

@@ -1,10 +1,19 @@
 package net.minecraft.client.renderer;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Locale;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.settings.GameSettings;
+import net.minecraft.util.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.Sys;
 import org.lwjgl.opengl.ARBFramebufferObject;
 import org.lwjgl.opengl.ARBMultitexture;
 import org.lwjgl.opengl.ARBShaderObjects;
@@ -25,8 +34,10 @@ import oshi.hardware.Processor;
 
 public class OpenGlHelper
 {
+    /** The logger used by {@link OpenGlHelper} in the event of an error */
+    private static final Logger LOGGER = LogManager.getLogger();
     public static boolean nvidia;
-    public static boolean field_181063_b;
+    public static boolean ati;
     public static int GL_FRAMEBUFFER;
     public static int GL_RENDERBUFFER;
     public static int GL_COLOR_ATTACHMENT0;
@@ -36,7 +47,7 @@ public class OpenGlHelper
     public static int GL_FB_INCOMPLETE_MISS_ATTACH;
     public static int GL_FB_INCOMPLETE_DRAW_BUFFER;
     public static int GL_FB_INCOMPLETE_READ_BUFFER;
-    private static int framebufferType;
+    private static OpenGlHelper.FboMode framebufferType;
     public static boolean framebufferSupported;
     private static boolean shadersAvailable;
     private static boolean arbShaders;
@@ -83,9 +94,9 @@ public class OpenGlHelper
     public static boolean openGL21;
     public static boolean shadersSupported;
     private static String logText = "";
-    private static String field_183030_aa;
+    private static String cpu;
     public static boolean vboSupported;
-    public static boolean field_181062_Q;
+    public static boolean vboSupportedAti;
     private static boolean arbVbo;
     public static int GL_ARRAY_BUFFER;
     public static int GL_STATIC_DRAW;
@@ -172,7 +183,7 @@ public class OpenGlHelper
             if (contextcapabilities.OpenGL30)
             {
                 logText = logText + "OpenGL 3.0 is supported and separate blending is supported.\n";
-                framebufferType = 0;
+                framebufferType = OpenGlHelper.FboMode.BASE;
                 GL_FRAMEBUFFER = 36160;
                 GL_RENDERBUFFER = 36161;
                 GL_COLOR_ATTACHMENT0 = 36064;
@@ -186,7 +197,7 @@ public class OpenGlHelper
             else if (contextcapabilities.GL_ARB_framebuffer_object)
             {
                 logText = logText + "ARB_framebuffer_object is supported and separate blending is supported.\n";
-                framebufferType = 1;
+                framebufferType = OpenGlHelper.FboMode.ARB;
                 GL_FRAMEBUFFER = 36160;
                 GL_RENDERBUFFER = 36161;
                 GL_COLOR_ATTACHMENT0 = 36064;
@@ -200,7 +211,7 @@ public class OpenGlHelper
             else if (contextcapabilities.GL_EXT_framebuffer_object)
             {
                 logText = logText + "EXT_framebuffer_object is supported.\n";
-                framebufferType = 2;
+                framebufferType = OpenGlHelper.FboMode.EXT;
                 GL_FRAMEBUFFER = 36160;
                 GL_RENDERBUFFER = 36161;
                 GL_COLOR_ATTACHMENT0 = 36064;
@@ -256,7 +267,7 @@ public class OpenGlHelper
         }
 
         shadersSupported = framebufferSupported && shadersAvailable;
-        String s = GL11.glGetString(GL11.GL_VENDOR).toLowerCase();
+        String s = GL11.glGetString(GL11.GL_VENDOR).toLowerCase(Locale.ROOT);
         nvidia = s.contains("nvidia");
         arbVbo = !contextcapabilities.OpenGL15 && contextcapabilities.GL_ARB_vertex_buffer_object;
         vboSupported = contextcapabilities.OpenGL15 || arbVbo;
@@ -278,13 +289,13 @@ public class OpenGlHelper
             }
         }
 
-        field_181063_b = s.contains("ati");
+        ati = s.contains("ati");
 
-        if (field_181063_b)
+        if (ati)
         {
             if (vboSupported)
             {
-                field_181062_Q = true;
+                vboSupportedAti = true;
             }
             else
             {
@@ -295,11 +306,10 @@ public class OpenGlHelper
         try
         {
             Processor[] aprocessor = (new SystemInfo()).getHardware().getProcessors();
-            field_183030_aa = String.format("%dx %s", new Object[] {Integer.valueOf(aprocessor.length), aprocessor[0]}).replaceAll("\\s+", " ");
+            cpu = String.format("%dx %s", aprocessor.length, aprocessor[0]).replaceAll("\\s+", " ");
         }
         catch (Throwable var3)
         {
-            ;
         }
     }
 
@@ -330,15 +340,15 @@ public class OpenGlHelper
         }
     }
 
-    public static void glDeleteShader(int p_153180_0_)
+    public static void glDeleteShader(int shaderIn)
     {
         if (arbShaders)
         {
-            ARBShaderObjects.glDeleteObjectARB(p_153180_0_);
+            ARBShaderObjects.glDeleteObjectARB(shaderIn);
         }
         else
         {
-            GL20.glDeleteShader(p_153180_0_);
+            GL20.glDeleteShader(shaderIn);
         }
     }
 
@@ -579,9 +589,9 @@ public class OpenGlHelper
         }
     }
 
-    public static int glGetAttribLocation(int p_153164_0_, CharSequence p_153164_1_)
+    public static int glGetAttribLocation(int program, CharSequence name)
     {
-        return arbShaders ? ARBVertexShader.glGetAttribLocationARB(p_153164_0_, p_153164_1_) : GL20.glGetAttribLocation(p_153164_0_, p_153164_1_);
+        return arbShaders ? ARBVertexShader.glGetAttribLocationARB(program, name) : GL20.glGetAttribLocation(program, name);
     }
 
     public static int glGenBuffers()
@@ -636,15 +646,15 @@ public class OpenGlHelper
         {
             switch (framebufferType)
             {
-                case 0:
+                case BASE:
                     GL30.glBindFramebuffer(target, framebufferIn);
                     break;
 
-                case 1:
+                case ARB:
                     ARBFramebufferObject.glBindFramebuffer(target, framebufferIn);
                     break;
 
-                case 2:
+                case EXT:
                     EXTFramebufferObject.glBindFramebufferEXT(target, framebufferIn);
             }
         }
@@ -656,15 +666,15 @@ public class OpenGlHelper
         {
             switch (framebufferType)
             {
-                case 0:
+                case BASE:
                     GL30.glBindRenderbuffer(target, renderbuffer);
                     break;
 
-                case 1:
+                case ARB:
                     ARBFramebufferObject.glBindRenderbuffer(target, renderbuffer);
                     break;
 
-                case 2:
+                case EXT:
                     EXTFramebufferObject.glBindRenderbufferEXT(target, renderbuffer);
             }
         }
@@ -676,15 +686,15 @@ public class OpenGlHelper
         {
             switch (framebufferType)
             {
-                case 0:
+                case BASE:
                     GL30.glDeleteRenderbuffers(renderbuffer);
                     break;
 
-                case 1:
+                case ARB:
                     ARBFramebufferObject.glDeleteRenderbuffers(renderbuffer);
                     break;
 
-                case 2:
+                case EXT:
                     EXTFramebufferObject.glDeleteRenderbuffersEXT(renderbuffer);
             }
         }
@@ -696,15 +706,15 @@ public class OpenGlHelper
         {
             switch (framebufferType)
             {
-                case 0:
+                case BASE:
                     GL30.glDeleteFramebuffers(framebufferIn);
                     break;
 
-                case 1:
+                case ARB:
                     ARBFramebufferObject.glDeleteFramebuffers(framebufferIn);
                     break;
 
-                case 2:
+                case EXT:
                     EXTFramebufferObject.glDeleteFramebuffersEXT(framebufferIn);
             }
         }
@@ -723,13 +733,13 @@ public class OpenGlHelper
         {
             switch (framebufferType)
             {
-                case 0:
+                case BASE:
                     return GL30.glGenFramebuffers();
 
-                case 1:
+                case ARB:
                     return ARBFramebufferObject.glGenFramebuffers();
 
-                case 2:
+                case EXT:
                     return EXTFramebufferObject.glGenFramebuffersEXT();
 
                 default:
@@ -748,13 +758,13 @@ public class OpenGlHelper
         {
             switch (framebufferType)
             {
-                case 0:
+                case BASE:
                     return GL30.glGenRenderbuffers();
 
-                case 1:
+                case ARB:
                     return ARBFramebufferObject.glGenRenderbuffers();
 
-                case 2:
+                case EXT:
                     return EXTFramebufferObject.glGenRenderbuffersEXT();
 
                 default:
@@ -769,15 +779,15 @@ public class OpenGlHelper
         {
             switch (framebufferType)
             {
-                case 0:
+                case BASE:
                     GL30.glRenderbufferStorage(target, internalFormat, width, height);
                     break;
 
-                case 1:
+                case ARB:
                     ARBFramebufferObject.glRenderbufferStorage(target, internalFormat, width, height);
                     break;
 
-                case 2:
+                case EXT:
                     EXTFramebufferObject.glRenderbufferStorageEXT(target, internalFormat, width, height);
             }
         }
@@ -789,15 +799,15 @@ public class OpenGlHelper
         {
             switch (framebufferType)
             {
-                case 0:
+                case BASE:
                     GL30.glFramebufferRenderbuffer(target, attachment, renderBufferTarget, renderBuffer);
                     break;
 
-                case 1:
+                case ARB:
                     ARBFramebufferObject.glFramebufferRenderbuffer(target, attachment, renderBufferTarget, renderBuffer);
                     break;
 
-                case 2:
+                case EXT:
                     EXTFramebufferObject.glFramebufferRenderbufferEXT(target, attachment, renderBufferTarget, renderBuffer);
             }
         }
@@ -813,13 +823,13 @@ public class OpenGlHelper
         {
             switch (framebufferType)
             {
-                case 0:
+                case BASE:
                     return GL30.glCheckFramebufferStatus(target);
 
-                case 1:
+                case ARB:
                     return ARBFramebufferObject.glCheckFramebufferStatus(target);
 
-                case 2:
+                case EXT:
                     return EXTFramebufferObject.glCheckFramebufferStatusEXT(target);
 
                 default:
@@ -834,15 +844,15 @@ public class OpenGlHelper
         {
             switch (framebufferType)
             {
-                case 0:
+                case BASE:
                     GL30.glFramebufferTexture2D(target, attachment, textarget, texture, level);
                     break;
 
-                case 1:
+                case ARB:
                     ARBFramebufferObject.glFramebufferTexture2D(target, attachment, textarget, texture, level);
                     break;
 
-                case 2:
+                case EXT:
                     EXTFramebufferObject.glFramebufferTexture2DEXT(target, attachment, textarget, texture, level);
             }
         }
@@ -881,15 +891,15 @@ public class OpenGlHelper
     /**
      * Sets the current coordinates of the given lightmap texture
      */
-    public static void setLightmapTextureCoords(int target, float p_77475_1_, float p_77475_2_)
+    public static void setLightmapTextureCoords(int target, float p_77475_1_, float t)
     {
         if (arbMultitexture)
         {
-            ARBMultitexture.glMultiTexCoord2fARB(target, p_77475_1_, p_77475_2_);
+            ARBMultitexture.glMultiTexCoord2fARB(target, p_77475_1_, t);
         }
         else
         {
-            GL13.glMultiTexCoord2f(target, p_77475_1_, p_77475_2_);
+            GL13.glMultiTexCoord2f(target, p_77475_1_, t);
         }
     }
 
@@ -917,8 +927,97 @@ public class OpenGlHelper
         return framebufferSupported && Minecraft.getMinecraft().gameSettings.fboEnable;
     }
 
-    public static String func_183029_j()
+    public static String getCpu()
     {
-        return field_183030_aa == null ? "<unknown>" : field_183030_aa;
+        return cpu == null ? "<unknown>" : cpu;
+    }
+
+    public static void renderDirections(int p_188785_0_)
+    {
+        GlStateManager.disableTexture2D();
+        GlStateManager.depthMask(false);
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuffer();
+        GL11.glLineWidth(4.0F);
+        bufferbuilder.begin(1, DefaultVertexFormats.POSITION_COLOR);
+        bufferbuilder.pos(0.0D, 0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+        bufferbuilder.pos(p_188785_0_, 0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+        bufferbuilder.pos(0.0D, 0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+        bufferbuilder.pos(0.0D, p_188785_0_, 0.0D).color(0, 0, 0, 255).endVertex();
+        bufferbuilder.pos(0.0D, 0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+        bufferbuilder.pos(0.0D, 0.0D, p_188785_0_).color(0, 0, 0, 255).endVertex();
+        tessellator.draw();
+        GL11.glLineWidth(2.0F);
+        bufferbuilder.begin(1, DefaultVertexFormats.POSITION_COLOR);
+        bufferbuilder.pos(0.0D, 0.0D, 0.0D).color(255, 0, 0, 255).endVertex();
+        bufferbuilder.pos(p_188785_0_, 0.0D, 0.0D).color(255, 0, 0, 255).endVertex();
+        bufferbuilder.pos(0.0D, 0.0D, 0.0D).color(0, 255, 0, 255).endVertex();
+        bufferbuilder.pos(0.0D, p_188785_0_, 0.0D).color(0, 255, 0, 255).endVertex();
+        bufferbuilder.pos(0.0D, 0.0D, 0.0D).color(127, 127, 255, 255).endVertex();
+        bufferbuilder.pos(0.0D, 0.0D, p_188785_0_).color(127, 127, 255, 255).endVertex();
+        tessellator.draw();
+        GL11.glLineWidth(1.0F);
+        GlStateManager.depthMask(true);
+        GlStateManager.enableTexture2D();
+    }
+
+    public static void openFile(File fileIn)
+    {
+        String s = fileIn.getAbsolutePath();
+
+        if (Util.getOSType() == Util.EnumOS.OSX)
+        {
+            try
+            {
+                LOGGER.info(s);
+                Runtime.getRuntime().exec(new String[] {"/usr/bin/open", s});
+                return;
+            }
+            catch (IOException ioexception1)
+            {
+                LOGGER.error("Couldn't open file", ioexception1);
+            }
+        }
+        else if (Util.getOSType() == Util.EnumOS.WINDOWS)
+        {
+            String s1 = String.format("cmd.exe /C start \"Open file\" \"%s\"", s);
+
+            try
+            {
+                Runtime.getRuntime().exec(s1);
+                return;
+            }
+            catch (IOException ioexception)
+            {
+                LOGGER.error("Couldn't open file", ioexception);
+            }
+        }
+
+        boolean flag = false;
+
+        try
+        {
+            Class<?> oclass = Class.forName("java.awt.Desktop");
+            Object object = oclass.getMethod("getDesktop").invoke(null);
+            oclass.getMethod("browse", URI.class).invoke(object, fileIn.toURI());
+        }
+        catch (Throwable throwable)
+        {
+            LOGGER.error("Couldn't open link", throwable);
+            flag = true;
+        }
+
+        if (flag)
+        {
+            LOGGER.info("Opening via system class!");
+            Sys.openURL("file://" + s);
+        }
+    }
+
+    enum FboMode
+    {
+        BASE,
+        ARB,
+        EXT
     }
 }

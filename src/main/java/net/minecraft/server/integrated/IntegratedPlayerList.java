@@ -4,18 +4,18 @@ import com.mojang.authlib.GameProfile;
 import java.net.SocketAddress;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.management.ServerConfigurationManager;
+import net.minecraft.server.management.PlayerList;
 
-public class IntegratedPlayerList extends ServerConfigurationManager
+public class IntegratedPlayerList extends PlayerList
 {
     /**
      * Holds the NBT data for the host player's save file, so this can be written to level.dat.
      */
     private NBTTagCompound hostPlayerData;
 
-    public IntegratedPlayerList(IntegratedServer p_i1314_1_)
+    public IntegratedPlayerList(IntegratedServer server)
     {
-        super(p_i1314_1_);
+        super(server);
         this.setViewDistance(10);
     }
 
@@ -26,8 +26,7 @@ public class IntegratedPlayerList extends ServerConfigurationManager
     {
         if (playerIn.getName().equals(this.getServerInstance().getServerOwner()))
         {
-            this.hostPlayerData = new NBTTagCompound();
-            playerIn.writeToNBT(this.hostPlayerData);
+            this.hostPlayerData = playerIn.writeToNBT(new NBTTagCompound());
         }
 
         super.writePlayerData(playerIn);

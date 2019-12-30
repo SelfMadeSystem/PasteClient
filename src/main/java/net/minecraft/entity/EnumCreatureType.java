@@ -9,10 +9,10 @@ import net.minecraft.entity.passive.IAnimals;
 
 public enum EnumCreatureType
 {
-    MONSTER(IMob.class, 70, Material.air, false, false),
-    CREATURE(EntityAnimal.class, 10, Material.air, true, true),
-    AMBIENT(EntityAmbientCreature.class, 15, Material.air, true, false),
-    WATER_CREATURE(EntityWaterMob.class, 5, Material.water, true, false);
+    MONSTER(IMob.class, 70, Material.AIR, false, false),
+    CREATURE(EntityAnimal.class, 10, Material.AIR, true, true),
+    AMBIENT(EntityAmbientCreature.class, 15, Material.AIR, true, false),
+    WATER_CREATURE(EntityWaterMob.class, 5, Material.WATER, true, false);
 
     private final Class <? extends IAnimals > creatureClass;
     private final int maxNumberOfCreature;
@@ -24,7 +24,7 @@ public enum EnumCreatureType
     /** Whether this creature type is an animal. */
     private final boolean isAnimal;
 
-    private EnumCreatureType(Class <? extends IAnimals > creatureClassIn, int maxNumberOfCreatureIn, Material creatureMaterialIn, boolean isPeacefulCreatureIn, boolean isAnimalIn)
+    EnumCreatureType(Class<? extends IAnimals> creatureClassIn, int maxNumberOfCreatureIn, Material creatureMaterialIn, boolean isPeacefulCreatureIn, boolean isAnimalIn)
     {
         this.creatureClass = creatureClassIn;
         this.maxNumberOfCreature = maxNumberOfCreatureIn;

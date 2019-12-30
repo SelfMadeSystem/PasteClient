@@ -2,20 +2,20 @@ package net.minecraft.client.renderer;
 
 public class Tessellator
 {
-    private WorldRenderer worldRenderer;
-    private WorldVertexBufferUploader vboUploader = new WorldVertexBufferUploader();
+    private final BufferBuilder worldRenderer;
+    private final WorldVertexBufferUploader vboUploader = new WorldVertexBufferUploader();
 
     /** The static instance of the Tessellator. */
-    private static final Tessellator instance = new Tessellator(2097152);
+    private static final Tessellator INSTANCE = new Tessellator(2097152);
 
     public static Tessellator getInstance()
     {
-        return instance;
+        return INSTANCE;
     }
 
     public Tessellator(int bufferSize)
     {
-        this.worldRenderer = new WorldRenderer(bufferSize);
+        this.worldRenderer = new BufferBuilder(bufferSize);
     }
 
     /**
@@ -24,10 +24,10 @@ public class Tessellator
     public void draw()
     {
         this.worldRenderer.finishDrawing();
-        this.vboUploader.func_181679_a(this.worldRenderer);
+        this.vboUploader.draw(this.worldRenderer);
     }
 
-    public WorldRenderer getWorldRenderer()
+    public BufferBuilder getBuffer()
     {
         return this.worldRenderer;
     }

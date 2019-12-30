@@ -11,26 +11,26 @@ public class UserListWhitelistEntry extends UserListEntry<GameProfile>
         super(profile);
     }
 
-    public UserListWhitelistEntry(JsonObject p_i1130_1_)
+    public UserListWhitelistEntry(JsonObject json)
     {
-        super(gameProfileFromJsonObject(p_i1130_1_), p_i1130_1_);
+        super(gameProfileFromJsonObject(json), json);
     }
 
     protected void onSerialization(JsonObject data)
     {
         if (this.getValue() != null)
         {
-            data.addProperty("uuid", ((GameProfile)this.getValue()).getId() == null ? "" : ((GameProfile)this.getValue()).getId().toString());
-            data.addProperty("name", ((GameProfile)this.getValue()).getName());
+            data.addProperty("uuid", this.getValue().getId() == null ? "" : this.getValue().getId().toString());
+            data.addProperty("name", this.getValue().getName());
             super.onSerialization(data);
         }
     }
 
-    private static GameProfile gameProfileFromJsonObject(JsonObject p_152646_0_)
+    private static GameProfile gameProfileFromJsonObject(JsonObject json)
     {
-        if (p_152646_0_.has("uuid") && p_152646_0_.has("name"))
+        if (json.has("uuid") && json.has("name"))
         {
-            String s = p_152646_0_.get("uuid").getAsString();
+            String s = json.get("uuid").getAsString();
             UUID uuid;
 
             try
@@ -42,7 +42,7 @@ public class UserListWhitelistEntry extends UserListEntry<GameProfile>
                 return null;
             }
 
-            return new GameProfile(uuid, p_152646_0_.get("name").getAsString());
+            return new GameProfile(uuid, json.get("name").getAsString());
         }
         else
         {

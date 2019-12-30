@@ -11,12 +11,12 @@
 §f			Nathan Adams
 §f			Ryan Holtz
 §f			Michael Stoyke
-
-§7Programming:
 §f			Erik Broes
+§f			Thomas Guimbretière
 
 §7Music and sound:
 §f			Daniel Rosenfeld
+§f			Samuel Åberg
 
 §7Ingame artwork and paintings:
 §f			Kristoffer Zetterstrand
@@ -27,7 +27,7 @@
 §7Website development:
 §f			Tobias Möllstam
 §f			Daniel Frisk
-§f			Leonard Axelsson
+§f			Leonard Gram
 §f			Jens Bergensten
 §f			Markus Persson
 
@@ -43,6 +43,15 @@
 
 §7Number crunching and statistics:
 §f			Patrick Geuder
+
+§7Realms Development Team:
+§f			Daniel Frisk
+§f			Leonard Gram
+§f			David Marby
+§f			Philip Vieira
+
+§7Realms Content Manager:
+§f			Marc Watson
 
 §7Additional programming:
 §f			Paul Spooner

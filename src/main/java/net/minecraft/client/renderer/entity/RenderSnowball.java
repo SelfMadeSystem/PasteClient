@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
@@ -10,40 +11,51 @@ import net.minecraft.util.ResourceLocation;
 
 public class RenderSnowball<T extends Entity> extends Render<T>
 {
-    protected final Item field_177084_a;
-    private final RenderItem field_177083_e;
+    protected final Item item;
+    private final RenderItem itemRenderer;
 
-    public RenderSnowball(RenderManager renderManagerIn, Item p_i46137_2_, RenderItem p_i46137_3_)
+    public RenderSnowball(RenderManager renderManagerIn, Item itemIn, RenderItem itemRendererIn)
     {
         super(renderManagerIn);
-        this.field_177084_a = p_i46137_2_;
-        this.field_177083_e = p_i46137_3_;
+        this.item = itemIn;
+        this.itemRenderer = itemRendererIn;
     }
 
     /**
-     * Actually renders the given argument. This is a synthetic bridge method, always casting down its argument and then
-     * handing it off to a worker function which does the actual work. In all probabilty, the class Render is generic
-     * (Render<T extends Entity>) and this method has signature public void doRender(T entity, double d, double d1,
-     * double d2, float f, float f1). But JAD is pre 1.5 so doe
+     * Renders the desired {@code T} type Entity.
      */
     public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks)
     {
         GlStateManager.pushMatrix();
         GlStateManager.translate((float)x, (float)y, (float)z);
         GlStateManager.enableRescaleNormal();
-        GlStateManager.scale(0.5F, 0.5F, 0.5F);
         GlStateManager.rotate(-this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
-        GlStateManager.rotate(this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
-        this.bindTexture(TextureMap.locationBlocksTexture);
-        this.field_177083_e.func_181564_a(this.func_177082_d(entity), ItemCameraTransforms.TransformType.GROUND);
+        GlStateManager.rotate((float)(this.renderManager.options.thirdPersonView == 2 ? -1 : 1) * this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
+        GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F);
+        this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+
+        if (this.renderOutlines)
+        {
+            GlStateManager.enableColorMaterial();
+            GlStateManager.enableOutlineMode(this.getTeamColor(entity));
+        }
+
+        this.itemRenderer.renderItem(this.getStackToRender(entity), ItemCameraTransforms.TransformType.GROUND);
+
+        if (this.renderOutlines)
+        {
+            GlStateManager.disableOutlineMode();
+            GlStateManager.disableColorMaterial();
+        }
+
         GlStateManager.disableRescaleNormal();
         GlStateManager.popMatrix();
         super.doRender(entity, x, y, z, entityYaw, partialTicks);
     }
 
-    public ItemStack func_177082_d(T entityIn)
+    public ItemStack getStackToRender(T entityIn)
     {
-        return new ItemStack(this.field_177084_a, 1, 0);
+        return new ItemStack(this.item);
     }
 
     /**
@@ -51,6 +63,6 @@ public class RenderSnowball<T extends Entity> extends Render<T>
      */
     protected ResourceLocation getEntityTexture(Entity entity)
     {
-        return TextureMap.locationBlocksTexture;
+        return TextureMap.LOCATION_BLOCKS_TEXTURE;
     }
 }

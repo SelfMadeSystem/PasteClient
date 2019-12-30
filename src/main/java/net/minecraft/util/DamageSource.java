@@ -1,29 +1,39 @@
 package net.minecraft.util;
 
+import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityFireball;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.Explosion;
 
 public class DamageSource
 {
-    public static DamageSource inFire = (new DamageSource("inFire")).setFireDamage();
-    public static DamageSource lightningBolt = new DamageSource("lightningBolt");
-    public static DamageSource onFire = (new DamageSource("onFire")).setDamageBypassesArmor().setFireDamage();
-    public static DamageSource lava = (new DamageSource("lava")).setFireDamage();
-    public static DamageSource inWall = (new DamageSource("inWall")).setDamageBypassesArmor();
-    public static DamageSource drown = (new DamageSource("drown")).setDamageBypassesArmor();
-    public static DamageSource starve = (new DamageSource("starve")).setDamageBypassesArmor().setDamageIsAbsolute();
-    public static DamageSource cactus = new DamageSource("cactus");
-    public static DamageSource fall = (new DamageSource("fall")).setDamageBypassesArmor();
-    public static DamageSource outOfWorld = (new DamageSource("outOfWorld")).setDamageBypassesArmor().setDamageAllowedInCreativeMode();
-    public static DamageSource generic = (new DamageSource("generic")).setDamageBypassesArmor();
-    public static DamageSource magic = (new DamageSource("magic")).setDamageBypassesArmor().setMagicDamage();
-    public static DamageSource wither = (new DamageSource("wither")).setDamageBypassesArmor();
-    public static DamageSource anvil = new DamageSource("anvil");
-    public static DamageSource fallingBlock = new DamageSource("fallingBlock");
+    public static final DamageSource inFire = (new DamageSource("inFire")).setFireDamage();
+    public static final DamageSource lightningBolt = new DamageSource("lightningBolt");
+    public static final DamageSource onFire = (new DamageSource("onFire")).setDamageBypassesArmor().setFireDamage();
+    public static final DamageSource lava = (new DamageSource("lava")).setFireDamage();
+    public static final DamageSource hotFloor = (new DamageSource("hotFloor")).setFireDamage();
+    public static final DamageSource inWall = (new DamageSource("inWall")).setDamageBypassesArmor();
+    public static final DamageSource field_191291_g = (new DamageSource("cramming")).setDamageBypassesArmor();
+    public static final DamageSource drown = (new DamageSource("drown")).setDamageBypassesArmor();
+    public static final DamageSource starve = (new DamageSource("starve")).setDamageBypassesArmor().setDamageIsAbsolute();
+    public static final DamageSource cactus = new DamageSource("cactus");
+    public static final DamageSource fall = (new DamageSource("fall")).setDamageBypassesArmor();
+    public static final DamageSource flyIntoWall = (new DamageSource("flyIntoWall")).setDamageBypassesArmor();
+    public static final DamageSource outOfWorld = (new DamageSource("outOfWorld")).setDamageBypassesArmor().setDamageAllowedInCreativeMode();
+    public static final DamageSource generic = (new DamageSource("generic")).setDamageBypassesArmor();
+    public static final DamageSource magic = (new DamageSource("magic")).setDamageBypassesArmor().setMagicDamage();
+    public static final DamageSource wither = (new DamageSource("wither")).setDamageBypassesArmor();
+    public static final DamageSource anvil = new DamageSource("anvil");
+    public static final DamageSource fallingBlock = new DamageSource("fallingBlock");
+    public static final DamageSource dragonBreath = (new DamageSource("dragonBreath")).setDamageBypassesArmor();
+    public static final DamageSource field_191552_t = (new DamageSource("fireworks")).setExplosion();
 
     /** This kind of damage can be blocked or not. */
     private boolean isUnblockable;
@@ -33,7 +43,7 @@ public class DamageSource
      * Whether or not the damage ignores modification by potion effects or enchantments.
      */
     private boolean damageIsAbsolute;
-    private float hungerDamage = 0.3F;
+    private float hungerDamage = 0.1F;
 
     /** This kind of damage is based on fire or not. */
     private boolean fireDamage;
@@ -56,6 +66,11 @@ public class DamageSource
         return new EntityDamageSource("mob", mob);
     }
 
+    public static DamageSource causeIndirectDamage(Entity source, EntityLivingBase indirectEntityIn)
+    {
+        return new EntityDamageSourceIndirect("mob", source, indirectEntityIn);
+    }
+
     /**
      * returns an EntityDamageSource of type player
      */
@@ -67,40 +82,45 @@ public class DamageSource
     /**
      * returns EntityDamageSourceIndirect of an arrow
      */
-    public static DamageSource causeArrowDamage(EntityArrow arrow, Entity p_76353_1_)
+    public static DamageSource causeArrowDamage(EntityArrow arrow, @Nullable Entity indirectEntityIn)
     {
-        return (new EntityDamageSourceIndirect("arrow", arrow, p_76353_1_)).setProjectile();
+        return (new EntityDamageSourceIndirect("arrow", arrow, indirectEntityIn)).setProjectile();
     }
 
     /**
      * returns EntityDamageSourceIndirect of a fireball
      */
-    public static DamageSource causeFireballDamage(EntityFireball fireball, Entity p_76362_1_)
+    public static DamageSource causeFireballDamage(EntityFireball fireball, @Nullable Entity indirectEntityIn)
     {
-        return p_76362_1_ == null ? (new EntityDamageSourceIndirect("onFire", fireball, fireball)).setFireDamage().setProjectile() : (new EntityDamageSourceIndirect("fireball", fireball, p_76362_1_)).setFireDamage().setProjectile();
+        return indirectEntityIn == null ? (new EntityDamageSourceIndirect("onFire", fireball, fireball)).setFireDamage().setProjectile() : (new EntityDamageSourceIndirect("fireball", fireball, indirectEntityIn)).setFireDamage().setProjectile();
     }
 
-    public static DamageSource causeThrownDamage(Entity p_76356_0_, Entity p_76356_1_)
+    public static DamageSource causeThrownDamage(Entity source, @Nullable Entity indirectEntityIn)
     {
-        return (new EntityDamageSourceIndirect("thrown", p_76356_0_, p_76356_1_)).setProjectile();
+        return (new EntityDamageSourceIndirect("thrown", source, indirectEntityIn)).setProjectile();
     }
 
-    public static DamageSource causeIndirectMagicDamage(Entity p_76354_0_, Entity p_76354_1_)
+    public static DamageSource causeIndirectMagicDamage(Entity source, @Nullable Entity indirectEntityIn)
     {
-        return (new EntityDamageSourceIndirect("indirectMagic", p_76354_0_, p_76354_1_)).setDamageBypassesArmor().setMagicDamage();
+        return (new EntityDamageSourceIndirect("indirectMagic", source, indirectEntityIn)).setDamageBypassesArmor().setMagicDamage();
     }
 
     /**
      * Returns the EntityDamageSource of the Thorns enchantment
      */
-    public static DamageSource causeThornsDamage(Entity p_92087_0_)
+    public static DamageSource causeThornsDamage(Entity source)
     {
-        return (new EntityDamageSource("thorns", p_92087_0_)).setIsThornsDamage().setMagicDamage();
+        return (new EntityDamageSource("thorns", source)).setIsThornsDamage().setMagicDamage();
     }
 
-    public static DamageSource setExplosionSource(Explosion explosionIn)
+    public static DamageSource causeExplosionDamage(@Nullable Explosion explosionIn)
     {
         return explosionIn != null && explosionIn.getExplosivePlacedBy() != null ? (new EntityDamageSource("explosion.player", explosionIn.getExplosivePlacedBy())).setDifficultyScaled().setExplosion() : (new DamageSource("explosion")).setDifficultyScaled().setExplosion();
+    }
+
+    public static DamageSource causeExplosionDamage(@Nullable EntityLivingBase entityLivingBaseIn)
+    {
+        return entityLivingBaseIn != null ? (new EntityDamageSource("explosion.player", entityLivingBaseIn)).setDifficultyScaled().setExplosion() : (new DamageSource("explosion")).setDifficultyScaled().setExplosion();
     }
 
     /**
@@ -162,11 +182,13 @@ public class DamageSource
         this.damageType = damageTypeIn;
     }
 
+    @Nullable
     public Entity getSourceOfDamage()
     {
         return this.getEntity();
     }
 
+    @Nullable
     public Entity getEntity()
     {
         return null;
@@ -208,12 +230,12 @@ public class DamageSource
     /**
      * Gets the death message that is displayed when the player dies
      */
-    public IChatComponent getDeathMessage(EntityLivingBase p_151519_1_)
+    public ITextComponent getDeathMessage(EntityLivingBase entityLivingBaseIn)
     {
-        EntityLivingBase entitylivingbase = p_151519_1_.func_94060_bK();
+        EntityLivingBase entitylivingbase = entityLivingBaseIn.getAttackingEntity();
         String s = "death.attack." + this.damageType;
         String s1 = s + ".player";
-        return entitylivingbase != null && StatCollector.canTranslate(s1) ? new ChatComponentTranslation(s1, new Object[] {p_151519_1_.getDisplayName(), entitylivingbase.getDisplayName()}): new ChatComponentTranslation(s, new Object[] {p_151519_1_.getDisplayName()});
+        return entitylivingbase != null && I18n.canTranslate(s1) ? new TextComponentTranslation(s1, entityLivingBaseIn.getDisplayName(), entitylivingbase.getDisplayName()) : new TextComponentTranslation(s, entityLivingBaseIn.getDisplayName());
     }
 
     /**
@@ -270,5 +292,15 @@ public class DamageSource
     {
         Entity entity = this.getEntity();
         return entity instanceof EntityPlayer && ((EntityPlayer)entity).capabilities.isCreativeMode;
+    }
+
+    @Nullable
+
+    /**
+     * Gets the location from which the damage originates.
+     */
+    public Vec3d getDamageLocation()
+    {
+        return null;
     }
 }

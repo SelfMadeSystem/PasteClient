@@ -1,52 +1,54 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import net.minecraft.client.model.ModelBiped;
-import net.minecraft.client.renderer.entity.RendererLivingEntity;
+import net.minecraft.client.renderer.entity.RenderLivingBase;
+import net.minecraft.inventory.EntityEquipmentSlot;
 
 public class LayerBipedArmor extends LayerArmorBase<ModelBiped>
 {
-    public LayerBipedArmor(RendererLivingEntity<?> rendererIn)
+    public LayerBipedArmor(RenderLivingBase<?> rendererIn)
     {
         super(rendererIn);
     }
 
     protected void initArmor()
     {
-        this.field_177189_c = new ModelBiped(0.5F);
-        this.field_177186_d = new ModelBiped(1.0F);
+        this.modelLeggings = new ModelBiped(0.5F);
+        this.modelArmor = new ModelBiped(1.0F);
     }
 
-    protected void func_177179_a(ModelBiped p_177179_1_, int p_177179_2_)
+    @SuppressWarnings("incomplete-switch")
+    protected void setModelSlotVisible(ModelBiped p_188359_1_, EntityEquipmentSlot slotIn)
     {
-        this.func_177194_a(p_177179_1_);
+        this.setModelVisible(p_188359_1_);
 
-        switch (p_177179_2_)
+        switch (slotIn)
         {
-            case 1:
-                p_177179_1_.bipedRightLeg.showModel = true;
-                p_177179_1_.bipedLeftLeg.showModel = true;
+            case HEAD:
+                p_188359_1_.bipedHead.showModel = true;
+                p_188359_1_.bipedHeadwear.showModel = true;
                 break;
 
-            case 2:
-                p_177179_1_.bipedBody.showModel = true;
-                p_177179_1_.bipedRightLeg.showModel = true;
-                p_177179_1_.bipedLeftLeg.showModel = true;
+            case CHEST:
+                p_188359_1_.bipedBody.showModel = true;
+                p_188359_1_.bipedRightArm.showModel = true;
+                p_188359_1_.bipedLeftArm.showModel = true;
                 break;
 
-            case 3:
-                p_177179_1_.bipedBody.showModel = true;
-                p_177179_1_.bipedRightArm.showModel = true;
-                p_177179_1_.bipedLeftArm.showModel = true;
+            case LEGS:
+                p_188359_1_.bipedBody.showModel = true;
+                p_188359_1_.bipedRightLeg.showModel = true;
+                p_188359_1_.bipedLeftLeg.showModel = true;
                 break;
 
-            case 4:
-                p_177179_1_.bipedHead.showModel = true;
-                p_177179_1_.bipedHeadwear.showModel = true;
+            case FEET:
+                p_188359_1_.bipedRightLeg.showModel = true;
+                p_188359_1_.bipedLeftLeg.showModel = true;
         }
     }
 
-    protected void func_177194_a(ModelBiped p_177194_1_)
+    protected void setModelVisible(ModelBiped model)
     {
-        p_177194_1_.setInvisible(false);
+        model.setInvisible(false);
     }
 }

@@ -5,15 +5,15 @@ import java.util.List;
 import net.minecraft.client.AnvilConverterException;
 import net.minecraft.util.IProgressUpdate;
 import net.minecraft.world.storage.ISaveFormat;
-import net.minecraft.world.storage.SaveFormatComparator;
+import net.minecraft.world.storage.WorldSummary;
 
 public class RealmsAnvilLevelStorageSource
 {
-    private ISaveFormat levelStorageSource;
+    private final ISaveFormat levelStorageSource;
 
-    public RealmsAnvilLevelStorageSource(ISaveFormat p_i1106_1_)
+    public RealmsAnvilLevelStorageSource(ISaveFormat levelStorageSourceIn)
     {
-        this.levelStorageSource = p_i1106_1_;
+        this.levelStorageSource = levelStorageSourceIn;
     }
 
     public String getName()
@@ -38,7 +38,7 @@ public class RealmsAnvilLevelStorageSource
 
     public boolean isNewLevelIdAcceptable(String p_isNewLevelIdAcceptable_1_)
     {
-        return this.levelStorageSource.func_154335_d(p_isNewLevelIdAcceptable_1_);
+        return this.levelStorageSource.isNewLevelIdAcceptable(p_isNewLevelIdAcceptable_1_);
     }
 
     public boolean deleteLevel(String p_deleteLevel_1_)
@@ -48,7 +48,7 @@ public class RealmsAnvilLevelStorageSource
 
     public boolean isConvertible(String p_isConvertible_1_)
     {
-        return this.levelStorageSource.func_154334_a(p_isConvertible_1_);
+        return this.levelStorageSource.isConvertible(p_isConvertible_1_);
     }
 
     public void renameLevel(String p_renameLevel_1_, String p_renameLevel_2_)
@@ -63,11 +63,11 @@ public class RealmsAnvilLevelStorageSource
 
     public List<RealmsLevelSummary> getLevelList() throws AnvilConverterException
     {
-        List<RealmsLevelSummary> list = Lists.<RealmsLevelSummary>newArrayList();
+        List<RealmsLevelSummary> list = Lists.newArrayList();
 
-        for (SaveFormatComparator saveformatcomparator : this.levelStorageSource.getSaveList())
+        for (WorldSummary worldsummary : this.levelStorageSource.getSaveList())
         {
-            list.add(new RealmsLevelSummary(saveformatcomparator));
+            list.add(new RealmsLevelSummary(worldsummary));
         }
 
         return list;

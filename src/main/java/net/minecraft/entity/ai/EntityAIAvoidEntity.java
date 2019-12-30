@@ -3,12 +3,13 @@ package net.minecraft.entity.ai;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
-import net.minecraft.pathfinding.PathEntity;
+import net.minecraft.pathfinding.Path;
 import net.minecraft.pathfinding.PathNavigate;
 import net.minecraft.util.EntitySelectors;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 public class EntityAIAvoidEntity<T extends Entity> extends EntityAIBase
 {
@@ -16,40 +17,40 @@ public class EntityAIAvoidEntity<T extends Entity> extends EntityAIBase
 
     /** The entity we are attached to */
     protected EntityCreature theEntity;
-    private double farSpeed;
-    private double nearSpeed;
+    private final double farSpeed;
+    private final double nearSpeed;
     protected T closestLivingEntity;
-    private float avoidDistance;
+    private final float avoidDistance;
 
     /** The PathEntity of our entity */
-    private PathEntity entityPathEntity;
+    private Path entityPathEntity;
 
     /** The PathNavigate of our entity */
-    private PathNavigate entityPathNavigate;
-    private Class<T> field_181064_i;
-    private Predicate <? super T > avoidTargetSelector;
+    private final PathNavigate entityPathNavigate;
+    private final Class<T> classToAvoid;
+    private final Predicate <? super T > avoidTargetSelector;
 
-    public EntityAIAvoidEntity(EntityCreature p_i46404_1_, Class<T> p_i46404_2_, float p_i46404_3_, double p_i46404_4_, double p_i46404_6_)
+    public EntityAIAvoidEntity(EntityCreature theEntityIn, Class<T> classToAvoidIn, float avoidDistanceIn, double farSpeedIn, double nearSpeedIn)
     {
-        this(p_i46404_1_, p_i46404_2_, Predicates.<T>alwaysTrue(), p_i46404_3_, p_i46404_4_, p_i46404_6_);
+        this(theEntityIn, classToAvoidIn, Predicates.alwaysTrue(), avoidDistanceIn, farSpeedIn, nearSpeedIn);
     }
 
-    public EntityAIAvoidEntity(EntityCreature p_i46405_1_, Class<T> p_i46405_2_, Predicate <? super T > p_i46405_3_, float p_i46405_4_, double p_i46405_5_, double p_i46405_7_)
+    public EntityAIAvoidEntity(EntityCreature theEntityIn, Class<T> classToAvoidIn, Predicate <? super T > avoidTargetSelectorIn, float avoidDistanceIn, double farSpeedIn, double nearSpeedIn)
     {
         this.canBeSeenSelector = new Predicate<Entity>()
         {
-            public boolean apply(Entity p_apply_1_)
+            public boolean apply(@Nullable Entity p_apply_1_)
             {
-                return p_apply_1_.isEntityAlive() && EntityAIAvoidEntity.this.theEntity.getEntitySenses().canSee(p_apply_1_);
+                return p_apply_1_.isEntityAlive() && EntityAIAvoidEntity.this.theEntity.getEntitySenses().canSee(p_apply_1_) && !EntityAIAvoidEntity.this.theEntity.isOnSameTeam(p_apply_1_);
             }
         };
-        this.theEntity = p_i46405_1_;
-        this.field_181064_i = p_i46405_2_;
-        this.avoidTargetSelector = p_i46405_3_;
-        this.avoidDistance = p_i46405_4_;
-        this.farSpeed = p_i46405_5_;
-        this.nearSpeed = p_i46405_7_;
-        this.entityPathNavigate = p_i46405_1_.getNavigator();
+        this.theEntity = theEntityIn;
+        this.classToAvoid = classToAvoidIn;
+        this.avoidTargetSelector = avoidTargetSelectorIn;
+        this.avoidDistance = avoidDistanceIn;
+        this.farSpeed = farSpeedIn;
+        this.nearSpeed = nearSpeedIn;
+        this.entityPathNavigate = theEntityIn.getNavigator();
         this.setMutexBits(1);
     }
 
@@ -58,7 +59,7 @@ public class EntityAIAvoidEntity<T extends Entity> extends EntityAIBase
      */
     public boolean shouldExecute()
     {
-        List<T> list = this.theEntity.worldObj.<T>getEntitiesWithinAABB(this.field_181064_i, this.theEntity.getEntityBoundingBox().expand((double)this.avoidDistance, 3.0D, (double)this.avoidDistance), Predicates.and(new Predicate[] {EntitySelectors.NOT_SPECTATING, this.canBeSeenSelector, this.avoidTargetSelector}));
+        List<T> list = this.theEntity.world.getEntitiesWithinAABB(this.classToAvoid, this.theEntity.getEntityBoundingBox().expand(this.avoidDistance, 3.0D, this.avoidDistance), Predicates.and(EntitySelectors.CAN_AI_TARGET, this.canBeSeenSelector, this.avoidTargetSelector));
 
         if (list.isEmpty())
         {
@@ -67,20 +68,20 @@ public class EntityAIAvoidEntity<T extends Entity> extends EntityAIBase
         else
         {
             this.closestLivingEntity = list.get(0);
-            Vec3 vec3 = RandomPositionGenerator.findRandomTargetBlockAwayFrom(this.theEntity, 16, 7, new Vec3(this.closestLivingEntity.posX, this.closestLivingEntity.posY, this.closestLivingEntity.posZ));
+            Vec3d vec3d = RandomPositionGenerator.findRandomTargetBlockAwayFrom(this.theEntity, 16, 7, new Vec3d(this.closestLivingEntity.posX, this.closestLivingEntity.posY, this.closestLivingEntity.posZ));
 
-            if (vec3 == null)
+            if (vec3d == null)
             {
                 return false;
             }
-            else if (this.closestLivingEntity.getDistanceSq(vec3.xCoord, vec3.yCoord, vec3.zCoord) < this.closestLivingEntity.getDistanceSqToEntity(this.theEntity))
+            else if (this.closestLivingEntity.getDistanceSq(vec3d.xCoord, vec3d.yCoord, vec3d.zCoord) < this.closestLivingEntity.getDistanceSqToEntity(this.theEntity))
             {
                 return false;
             }
             else
             {
-                this.entityPathEntity = this.entityPathNavigate.getPathToXYZ(vec3.xCoord, vec3.yCoord, vec3.zCoord);
-                return this.entityPathEntity == null ? false : this.entityPathEntity.isDestinationSame(vec3);
+                this.entityPathEntity = this.entityPathNavigate.getPathToXYZ(vec3d.xCoord, vec3d.yCoord, vec3d.zCoord);
+                return this.entityPathEntity != null;
             }
         }
     }

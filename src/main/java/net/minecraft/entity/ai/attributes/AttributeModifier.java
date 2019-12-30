@@ -2,7 +2,7 @@ package net.minecraft.entity.ai.attributes;
 
 import io.netty.util.internal.ThreadLocalRandom;
 import java.util.UUID;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.Validate;
 
 public class AttributeModifier
@@ -19,7 +19,7 @@ public class AttributeModifier
 
     public AttributeModifier(String nameIn, double amountIn, int operationIn)
     {
-        this(MathHelper.getRandomUuid(ThreadLocalRandom.current()), nameIn, amountIn, operationIn);
+        this(MathHelper.getRandomUUID(ThreadLocalRandom.current()), nameIn, amountIn, operationIn);
     }
 
     public AttributeModifier(UUID idIn, String nameIn, double amountIn, int operationIn)
@@ -29,8 +29,8 @@ public class AttributeModifier
         this.name = nameIn;
         this.amount = amountIn;
         this.operation = operationIn;
-        Validate.notEmpty(nameIn, "Modifier name cannot be empty", new Object[0]);
-        Validate.inclusiveBetween(0L, 2L, (long)operationIn, "Invalid operation");
+        Validate.notEmpty(nameIn, "Modifier name cannot be empty");
+        Validate.inclusiveBetween(0L, 2L, operationIn, "Invalid operation");
     }
 
     public UUID getID()
@@ -82,17 +82,10 @@ public class AttributeModifier
 
             if (this.id != null)
             {
-                if (!this.id.equals(attributemodifier.id))
-                {
-                    return false;
-                }
+                return this.id.equals(attributemodifier.id);
             }
-            else if (attributemodifier.id != null)
-            {
-                return false;
-            }
+            else return attributemodifier.id == null;
 
-            return true;
         }
         else
         {
@@ -107,6 +100,6 @@ public class AttributeModifier
 
     public String toString()
     {
-        return "AttributeModifier{amount=" + this.amount + ", operation=" + this.operation + ", name=\'" + this.name + '\'' + ", id=" + this.id + ", serialize=" + this.isSaved + '}';
+        return "AttributeModifier{amount=" + this.amount + ", operation=" + this.operation + ", name='" + this.name + '\'' + ", id=" + this.id + ", serialize=" + this.isSaved + '}';
     }
 }

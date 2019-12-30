@@ -1,6 +1,8 @@
 package net.minecraft.world.storage;
 
+import java.io.File;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.client.AnvilConverterException;
 import net.minecraft.util.IProgressUpdate;
 
@@ -16,22 +18,23 @@ public interface ISaveFormat
      */
     ISaveHandler getSaveLoader(String saveName, boolean storePlayerdata);
 
-    List<SaveFormatComparator> getSaveList() throws AnvilConverterException;
+    List<WorldSummary> getSaveList() throws AnvilConverterException;
 
     void flushCache();
+
+    @Nullable
 
     /**
      * Returns the world's WorldInfo object
      */
     WorldInfo getWorldInfo(String saveName);
 
-    boolean func_154335_d(String p_154335_1_);
+    boolean isNewLevelIdAcceptable(String saveName);
 
     /**
-     * @args: Takes one argument - the name of the directory of the world to delete. @desc: Delete the world by deleting
-     * the associated directory recursively.
+     * Deletes a world directory.
      */
-    boolean deleteWorldDirectory(String p_75802_1_);
+    boolean deleteWorldDirectory(String saveName);
 
     /**
      * Renames the world by storing the new name in level.dat. It does *not* rename the directory containing the world
@@ -39,7 +42,7 @@ public interface ISaveFormat
      */
     void renameWorld(String dirName, String newName);
 
-    boolean func_154334_a(String saveName);
+    boolean isConvertible(String saveName);
 
     /**
      * gets if the map is old chunk saving (true) or McRegion (false)
@@ -54,5 +57,7 @@ public interface ISaveFormat
     /**
      * Return whether the given world can be loaded.
      */
-    boolean canLoadWorld(String p_90033_1_);
+    boolean canLoadWorld(String saveName);
+
+    File getFile(String p_186352_1_, String p_186352_2_);
 }

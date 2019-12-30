@@ -2,20 +2,20 @@ package net.minecraft.server.network;
 
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.status.INetHandlerStatusServer;
-import net.minecraft.network.status.client.C00PacketServerQuery;
-import net.minecraft.network.status.client.C01PacketPing;
-import net.minecraft.network.status.server.S00PacketServerInfo;
-import net.minecraft.network.status.server.S01PacketPong;
+import net.minecraft.network.status.client.CPacketPing;
+import net.minecraft.network.status.client.CPacketServerQuery;
+import net.minecraft.network.status.server.SPacketPong;
+import net.minecraft.network.status.server.SPacketServerInfo;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 
 public class NetHandlerStatusServer implements INetHandlerStatusServer
 {
-    private static final IChatComponent field_183007_a = new ChatComponentText("Status request has been handled.");
+    private static final ITextComponent EXIT_MESSAGE = new TextComponentString("Status request has been handled.");
     private final MinecraftServer server;
     private final NetworkManager networkManager;
-    private boolean field_183008_d;
+    private boolean handled;
 
     public NetHandlerStatusServer(MinecraftServer serverIn, NetworkManager netManager)
     {
@@ -26,26 +26,26 @@ public class NetHandlerStatusServer implements INetHandlerStatusServer
     /**
      * Invoked when disconnecting, the parameter is a ChatComponent describing the reason for termination
      */
-    public void onDisconnect(IChatComponent reason)
+    public void onDisconnect(ITextComponent reason)
     {
     }
 
-    public void processServerQuery(C00PacketServerQuery packetIn)
+    public void processServerQuery(CPacketServerQuery packetIn)
     {
-        if (this.field_183008_d)
+        if (this.handled)
         {
-            this.networkManager.closeChannel(field_183007_a);
+            this.networkManager.closeChannel(EXIT_MESSAGE);
         }
         else
         {
-            this.field_183008_d = true;
-            this.networkManager.sendPacket(new S00PacketServerInfo(this.server.getServerStatusResponse()));
+            this.handled = true;
+            this.networkManager.sendPacket(new SPacketServerInfo(this.server.getServerStatusResponse()));
         }
     }
 
-    public void processPing(C01PacketPing packetIn)
+    public void processPing(CPacketPing packetIn)
     {
-        this.networkManager.sendPacket(new S01PacketPong(packetIn.getClientTime()));
-        this.networkManager.closeChannel(field_183007_a);
+        this.networkManager.sendPacket(new SPacketPong(packetIn.getClientTime()));
+        this.networkManager.closeChannel(EXIT_MESSAGE);
     }
 }

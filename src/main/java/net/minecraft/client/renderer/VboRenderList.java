@@ -2,12 +2,11 @@ package net.minecraft.client.renderer;
 
 import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
-import net.minecraft.util.EnumWorldBlockLayer;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.util.BlockRenderLayer;
 
 public class VboRenderList extends ChunkRenderContainer
 {
-    public void renderChunkLayer(EnumWorldBlockLayer layer)
+    public void renderChunkLayer(BlockRenderLayer layer)
     {
         if (this.initialized)
         {
@@ -31,11 +30,11 @@ public class VboRenderList extends ChunkRenderContainer
 
     private void setupArrayPointers()
     {
-        GL11.glVertexPointer(3, GL11.GL_FLOAT, 28, 0L);
-        GL11.glColorPointer(4, GL11.GL_UNSIGNED_BYTE, 28, 12L);
-        GL11.glTexCoordPointer(2, GL11.GL_FLOAT, 28, 16L);
+        GlStateManager.glVertexPointer(3, 5126, 28, 0);
+        GlStateManager.glColorPointer(4, 5121, 28, 12);
+        GlStateManager.glTexCoordPointer(2, 5126, 28, 16);
         OpenGlHelper.setClientActiveTexture(OpenGlHelper.lightmapTexUnit);
-        GL11.glTexCoordPointer(2, GL11.GL_SHORT, 28, 24L);
+        GlStateManager.glTexCoordPointer(2, 5122, 28, 24);
         OpenGlHelper.setClientActiveTexture(OpenGlHelper.defaultTexUnit);
     }
 }

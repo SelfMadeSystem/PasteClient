@@ -2,6 +2,7 @@ package net.minecraft.client.entity;
 
 import com.mojang.authlib.GameProfile;
 import java.io.File;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.ImageBufferDownload;
@@ -15,12 +16,15 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StringUtils;
+import net.minecraft.world.GameType;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldSettings;
 
 public abstract class AbstractClientPlayer extends EntityPlayer
 {
     private NetworkPlayerInfo playerInfo;
+    public float rotateElytraX;
+    public float rotateElytraY;
+    public float rotateElytraZ;
 
     public AbstractClientPlayer(World worldIn, GameProfile playerProfile)
     {
@@ -32,8 +36,14 @@ public abstract class AbstractClientPlayer extends EntityPlayer
      */
     public boolean isSpectator()
     {
-        NetworkPlayerInfo networkplayerinfo = Minecraft.getMinecraft().getNetHandler().getPlayerInfo(this.getGameProfile().getId());
-        return networkplayerinfo != null && networkplayerinfo.getGameType() == WorldSettings.GameType.SPECTATOR;
+        NetworkPlayerInfo networkplayerinfo = Minecraft.getMinecraft().getConnection().getPlayerInfo(this.getGameProfile().getId());
+        return networkplayerinfo != null && networkplayerinfo.getGameType() == GameType.SPECTATOR;
+    }
+
+    public boolean isCreative()
+    {
+        NetworkPlayerInfo networkplayerinfo = Minecraft.getMinecraft().getConnection().getPlayerInfo(this.getGameProfile().getId());
+        return networkplayerinfo != null && networkplayerinfo.getGameType() == GameType.CREATIVE;
     }
 
     /**
@@ -44,11 +54,12 @@ public abstract class AbstractClientPlayer extends EntityPlayer
         return this.getPlayerInfo() != null;
     }
 
+    @Nullable
     protected NetworkPlayerInfo getPlayerInfo()
     {
         if (this.playerInfo == null)
         {
-            this.playerInfo = Minecraft.getMinecraft().getNetHandler().getPlayerInfo(this.getUniqueID());
+            this.playerInfo = Minecraft.getMinecraft().getConnection().getPlayerInfo(this.getUniqueID());
         }
 
         return this.playerInfo;
@@ -72,10 +83,27 @@ public abstract class AbstractClientPlayer extends EntityPlayer
         return networkplayerinfo == null ? DefaultPlayerSkin.getDefaultSkin(this.getUniqueID()) : networkplayerinfo.getLocationSkin();
     }
 
+    @Nullable
     public ResourceLocation getLocationCape()
     {
         NetworkPlayerInfo networkplayerinfo = this.getPlayerInfo();
         return networkplayerinfo == null ? null : networkplayerinfo.getLocationCape();
+    }
+
+    public boolean isPlayerInfoSet()
+    {
+        return this.getPlayerInfo() != null;
+    }
+
+    @Nullable
+
+    /**
+     * Gets the special Elytra texture for the player.
+     */
+    public ResourceLocation getLocationElytra()
+    {
+        NetworkPlayerInfo networkplayerinfo = this.getPlayerInfo();
+        return networkplayerinfo == null ? null : networkplayerinfo.getLocationElytra();
     }
 
     public static ThreadDownloadImageData getDownloadImageSkin(ResourceLocation resourceLocationIn, String username)
@@ -85,7 +113,7 @@ public abstract class AbstractClientPlayer extends EntityPlayer
 
         if (itextureobject == null)
         {
-            itextureobject = new ThreadDownloadImageData((File)null, String.format("http://skins.minecraft.net/MinecraftSkins/%s.png", new Object[] {StringUtils.stripControlCodes(username)}), DefaultPlayerSkin.getDefaultSkin(getOfflineUUID(username)), new ImageBufferDownload());
+            itextureobject = new ThreadDownloadImageData(null, String.format("http://skins.minecraft.net/MinecraftSkins/%s.png", StringUtils.stripControlCodes(username)), DefaultPlayerSkin.getDefaultSkin(getOfflineUUID(username)), new ImageBufferDownload());
             texturemanager.loadTexture(resourceLocationIn, itextureobject);
         }
 
@@ -115,7 +143,7 @@ public abstract class AbstractClientPlayer extends EntityPlayer
             f *= 1.1F;
         }
 
-        IAttributeInstance iattributeinstance = this.getEntityAttribute(SharedMonsterAttributes.movementSpeed);
+        IAttributeInstance iattributeinstance = this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
         f = (float)((double)f * ((iattributeinstance.getAttributeValue() / (double)this.capabilities.getWalkSpeed() + 1.0D) / 2.0D));
 
         if (this.capabilities.getWalkSpeed() == 0.0F || Float.isNaN(f) || Float.isInfinite(f))
@@ -123,9 +151,9 @@ public abstract class AbstractClientPlayer extends EntityPlayer
             f = 1.0F;
         }
 
-        if (this.isUsingItem() && this.getItemInUse().getItem() == Items.bow)
+        if (this.isHandActive() && this.getActiveItemStack().getItem() == Items.BOW)
         {
-            int i = this.getItemInUseDuration();
+            int i = this.getItemInUseMaxCount();
             float f1 = (float)i / 20.0F;
 
             if (f1 > 1.0F)

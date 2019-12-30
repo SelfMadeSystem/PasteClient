@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.texture;
 
-import org.lwjgl.opengl.GL11;
+import net.minecraft.client.renderer.GlStateManager;
 
 public abstract class AbstractTexture implements ITextureObject
 {
@@ -10,33 +10,33 @@ public abstract class AbstractTexture implements ITextureObject
     protected boolean blurLast;
     protected boolean mipmapLast;
 
-    public void setBlurMipmapDirect(boolean p_174937_1_, boolean p_174937_2_)
+    public void setBlurMipmapDirect(boolean blurIn, boolean mipmapIn)
     {
-        this.blur = p_174937_1_;
-        this.mipmap = p_174937_2_;
-        int i = -1;
-        int j = -1;
+        this.blur = blurIn;
+        this.mipmap = mipmapIn;
+        int i;
+        int j;
 
-        if (p_174937_1_)
+        if (blurIn)
         {
-            i = p_174937_2_ ? 9987 : 9729;
+            i = mipmapIn ? 9987 : 9729;
             j = 9729;
         }
         else
         {
-            i = p_174937_2_ ? 9986 : 9728;
+            i = mipmapIn ? 9986 : 9728;
             j = 9728;
         }
 
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, i);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, j);
+        GlStateManager.glTexParameteri(3553, 10241, i);
+        GlStateManager.glTexParameteri(3553, 10240, j);
     }
 
-    public void setBlurMipmap(boolean p_174936_1_, boolean p_174936_2_)
+    public void setBlurMipmap(boolean blurIn, boolean mipmapIn)
     {
         this.blurLast = this.blur;
         this.mipmapLast = this.mipmap;
-        this.setBlurMipmapDirect(p_174936_1_, p_174936_2_);
+        this.setBlurMipmapDirect(blurIn, mipmapIn);
     }
 
     public void restoreLastBlurMipmap()

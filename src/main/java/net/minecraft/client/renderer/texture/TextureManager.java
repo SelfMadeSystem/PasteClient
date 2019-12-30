@@ -3,14 +3,15 @@ package net.minecraft.client.renderer.texture;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
+import net.minecraft.crash.ICrashReportDetail;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
@@ -18,11 +19,12 @@ import org.apache.logging.log4j.Logger;
 
 public class TextureManager implements ITickable, IResourceManagerReloadListener
 {
-    private static final Logger logger = LogManager.getLogger();
-    private final Map<ResourceLocation, ITextureObject> mapTextureObjects = Maps.<ResourceLocation, ITextureObject>newHashMap();
-    private final List<ITickable> listTickables = Lists.<ITickable>newArrayList();
-    private final Map<String, Integer> mapTextureCounters = Maps.<String, Integer>newHashMap();
-    private IResourceManager theResourceManager;
+    private static final Logger LOGGER = LogManager.getLogger();
+    public static final ResourceLocation field_194008_a = new ResourceLocation("");
+    private final Map<ResourceLocation, ITextureObject> mapTextureObjects = Maps.newHashMap();
+    private final List<ITickable> listTickables = Lists.newArrayList();
+    private final Map<String, Integer> mapTextureCounters = Maps.newHashMap();
+    private final IResourceManager theResourceManager;
 
     public TextureManager(IResourceManager resourceManager)
     {
@@ -31,7 +33,7 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
 
     public void bindTexture(ResourceLocation resource)
     {
-        ITextureObject itextureobject = (ITextureObject)this.mapTextureObjects.get(resource);
+        ITextureObject itextureobject = this.mapTextureObjects.get(resource);
 
         if (itextureobject == null)
         {
@@ -61,13 +63,17 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
 
         try
         {
-            ((ITextureObject)textureObj).loadTexture(this.theResourceManager);
+            textureObj.loadTexture(this.theResourceManager);
         }
         catch (IOException ioexception)
         {
-            logger.warn((String)("Failed to load texture: " + textureLocation), (Throwable)ioexception);
-            textureObj = TextureUtil.missingTexture;
-            this.mapTextureObjects.put(textureLocation, (ITextureObject)textureObj);
+            if (textureLocation != field_194008_a)
+            {
+                LOGGER.warn("Failed to load texture: {}", textureLocation, ioexception);
+            }
+
+            textureObj = TextureUtil.MISSING_TEXTURE;
+            this.mapTextureObjects.put(textureLocation, textureObj);
             flag = false;
         }
         catch (Throwable throwable)
@@ -76,7 +82,7 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
             CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Registering texture");
             CrashReportCategory crashreportcategory = crashreport.makeCategory("Resource location being registered");
             crashreportcategory.addCrashSection("Resource location", textureLocation);
-            crashreportcategory.addCrashSectionCallable("Texture object class", new Callable<String>()
+            crashreportcategory.setDetail("Texture object class", new ICrashReportDetail<String>()
             {
                 public String call() throws Exception
                 {
@@ -86,18 +92,18 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
             throw new ReportedException(crashreport);
         }
 
-        this.mapTextureObjects.put(textureLocation, (ITextureObject)textureObj);
+        this.mapTextureObjects.put(textureLocation, textureObj);
         return flag;
     }
 
     public ITextureObject getTexture(ResourceLocation textureLocation)
     {
-        return (ITextureObject)this.mapTextureObjects.get(textureLocation);
+        return this.mapTextureObjects.get(textureLocation);
     }
 
     public ResourceLocation getDynamicTextureLocation(String name, DynamicTexture texture)
     {
-        Integer integer = (Integer)this.mapTextureCounters.get(name);
+        Integer integer = this.mapTextureCounters.get(name);
 
         if (integer == null)
         {
@@ -105,11 +111,11 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
         }
         else
         {
-            integer = Integer.valueOf(integer.intValue() + 1);
+            integer = integer.intValue() + 1;
         }
 
         this.mapTextureCounters.put(name, integer);
-        ResourceLocation resourcelocation = new ResourceLocation(String.format("dynamic/%s_%d", new Object[] {name, integer}));
+        ResourceLocation resourcelocation = new ResourceLocation(String.format("dynamic/%s_%d", name, integer));
         this.loadTexture(resourcelocation, texture);
         return resourcelocation;
     }
@@ -134,9 +140,21 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
 
     public void onResourceManagerReload(IResourceManager resourceManager)
     {
-        for (Entry<ResourceLocation, ITextureObject> entry : this.mapTextureObjects.entrySet())
+        Iterator<Entry<ResourceLocation, ITextureObject>> iterator = this.mapTextureObjects.entrySet().iterator();
+
+        while (iterator.hasNext())
         {
-            this.loadTexture((ResourceLocation)entry.getKey(), (ITextureObject)entry.getValue());
+            Entry<ResourceLocation, ITextureObject> entry = iterator.next();
+            ITextureObject itextureobject = entry.getValue();
+
+            if (itextureobject == TextureUtil.MISSING_TEXTURE)
+            {
+                iterator.remove();
+            }
+            else
+            {
+                this.loadTexture(entry.getKey(), itextureobject);
+            }
         }
     }
 }

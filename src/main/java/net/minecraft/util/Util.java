@@ -1,42 +1,75 @@
 package net.minecraft.util;
 
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import javax.annotation.Nullable;
 import org.apache.logging.log4j.Logger;
 
 public class Util
 {
     public static Util.EnumOS getOSType()
     {
-        String s = System.getProperty("os.name").toLowerCase();
-        return s.contains("win") ? Util.EnumOS.WINDOWS : (s.contains("mac") ? Util.EnumOS.OSX : (s.contains("solaris") ? Util.EnumOS.SOLARIS : (s.contains("sunos") ? Util.EnumOS.SOLARIS : (s.contains("linux") ? Util.EnumOS.LINUX : (s.contains("unix") ? Util.EnumOS.LINUX : Util.EnumOS.UNKNOWN)))));
+        String s = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+
+        if (s.contains("win"))
+        {
+            return Util.EnumOS.WINDOWS;
+        }
+        else if (s.contains("mac"))
+        {
+            return Util.EnumOS.OSX;
+        }
+        else if (s.contains("solaris"))
+        {
+            return Util.EnumOS.SOLARIS;
+        }
+        else if (s.contains("sunos"))
+        {
+            return Util.EnumOS.SOLARIS;
+        }
+        else if (s.contains("linux"))
+        {
+            return Util.EnumOS.LINUX;
+        }
+        else
+        {
+            return s.contains("unix") ? Util.EnumOS.LINUX : Util.EnumOS.UNKNOWN;
+        }
     }
 
-    public static <V> V func_181617_a(FutureTask<V> p_181617_0_, Logger p_181617_1_)
+    @Nullable
+    public static <V> V runTask(FutureTask<V> task, Logger logger)
     {
         try
         {
-            p_181617_0_.run();
-            return p_181617_0_.get();
+            task.run();
+            return task.get();
         }
         catch (ExecutionException executionexception)
         {
-            p_181617_1_.fatal((String)"Error executing task", (Throwable)executionexception);
+            logger.fatal("Error executing task", executionexception);
         }
         catch (InterruptedException interruptedexception)
         {
-            p_181617_1_.fatal((String)"Error executing task", (Throwable)interruptedexception);
+            logger.fatal("Error executing task", interruptedexception);
         }
 
-        return (V)null;
+        return null;
     }
 
-    public static enum EnumOS
+    public static <T> T getLastElement(List<T> list)
+    {
+        return list.get(list.size() - 1);
+    }
+
+    public enum EnumOS
     {
         LINUX,
         SOLARIS,
         WINDOWS,
         OSX,
-        UNKNOWN;
+        UNKNOWN
     }
 }

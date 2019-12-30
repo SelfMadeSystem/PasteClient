@@ -3,15 +3,15 @@ package net.minecraft.client.model;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.EntityGuardian;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 public class ModelGuardian extends ModelBase
 {
-    private ModelRenderer guardianBody;
-    private ModelRenderer guardianEye;
-    private ModelRenderer[] guardianSpines;
-    private ModelRenderer[] guardianTail;
+    private final ModelRenderer guardianBody;
+    private final ModelRenderer guardianEye;
+    private final ModelRenderer[] guardianSpines;
+    private final ModelRenderer[] guardianTail;
 
     public ModelGuardian()
     {
@@ -48,17 +48,12 @@ public class ModelGuardian extends ModelBase
         this.guardianTail[1].addChild(this.guardianTail[2]);
     }
 
-    public int func_178706_a()
-    {
-        return 54;
-    }
-
     /**
      * Sets the models various rotation angles then renders the model.
      */
-    public void render(Entity entityIn, float p_78088_2_, float p_78088_3_, float p_78088_4_, float p_78088_5_, float p_78088_6_, float scale)
+    public void render(Entity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
-        this.setRotationAngles(p_78088_2_, p_78088_3_, p_78088_4_, p_78088_5_, p_78088_6_, scale, entityIn);
+        this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entityIn);
         this.guardianBody.render(scale);
     }
 
@@ -67,28 +62,28 @@ public class ModelGuardian extends ModelBase
      * and legs, where par1 represents the time(so that arms and legs swing back and forth) and par2 represents how
      * "far" arms and legs can swing at most.
      */
-    public void setRotationAngles(float p_78087_1_, float p_78087_2_, float p_78087_3_, float p_78087_4_, float p_78087_5_, float p_78087_6_, Entity entityIn)
+    public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn)
     {
         EntityGuardian entityguardian = (EntityGuardian)entityIn;
-        float f = p_78087_3_ - (float)entityguardian.ticksExisted;
-        this.guardianBody.rotateAngleY = p_78087_4_ / (180F / (float)Math.PI);
-        this.guardianBody.rotateAngleX = p_78087_5_ / (180F / (float)Math.PI);
+        float f = ageInTicks - (float)entityguardian.ticksExisted;
+        this.guardianBody.rotateAngleY = netHeadYaw * 0.017453292F;
+        this.guardianBody.rotateAngleX = headPitch * 0.017453292F;
         float[] afloat = new float[] {1.75F, 0.25F, 0.0F, 0.0F, 0.5F, 0.5F, 0.5F, 0.5F, 1.25F, 0.75F, 0.0F, 0.0F};
         float[] afloat1 = new float[] {0.0F, 0.0F, 0.0F, 0.0F, 0.25F, 1.75F, 1.25F, 0.75F, 0.0F, 0.0F, 0.0F, 0.0F};
         float[] afloat2 = new float[] {0.0F, 0.0F, 0.25F, 1.75F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.75F, 1.25F};
         float[] afloat3 = new float[] {0.0F, 0.0F, 8.0F, -8.0F, -8.0F, 8.0F, 8.0F, -8.0F, 0.0F, 0.0F, 8.0F, -8.0F};
         float[] afloat4 = new float[] { -8.0F, -8.0F, -8.0F, -8.0F, 0.0F, 0.0F, 0.0F, 0.0F, 8.0F, 8.0F, 8.0F, 8.0F};
         float[] afloat5 = new float[] {8.0F, -8.0F, 0.0F, 0.0F, -8.0F, -8.0F, 8.0F, 8.0F, 8.0F, -8.0F, 0.0F, 0.0F};
-        float f1 = (1.0F - entityguardian.func_175469_o(f)) * 0.55F;
+        float f1 = (1.0F - entityguardian.getSpikesAnimation(f)) * 0.55F;
 
         for (int i = 0; i < 12; ++i)
         {
             this.guardianSpines[i].rotateAngleX = (float)Math.PI * afloat[i];
             this.guardianSpines[i].rotateAngleY = (float)Math.PI * afloat1[i];
             this.guardianSpines[i].rotateAngleZ = (float)Math.PI * afloat2[i];
-            this.guardianSpines[i].rotationPointX = afloat3[i] * (1.0F + MathHelper.cos(p_78087_3_ * 1.5F + (float)i) * 0.01F - f1);
-            this.guardianSpines[i].rotationPointY = 16.0F + afloat4[i] * (1.0F + MathHelper.cos(p_78087_3_ * 1.5F + (float)i) * 0.01F - f1);
-            this.guardianSpines[i].rotationPointZ = afloat5[i] * (1.0F + MathHelper.cos(p_78087_3_ * 1.5F + (float)i) * 0.01F - f1);
+            this.guardianSpines[i].rotationPointX = afloat3[i] * (1.0F + MathHelper.cos(ageInTicks * 1.5F + (float)i) * 0.01F - f1);
+            this.guardianSpines[i].rotationPointY = 16.0F + afloat4[i] * (1.0F + MathHelper.cos(ageInTicks * 1.5F + (float)i) * 0.01F - f1);
+            this.guardianSpines[i].rotationPointZ = afloat5[i] * (1.0F + MathHelper.cos(ageInTicks * 1.5F + (float)i) * 0.01F - f1);
         }
 
         this.guardianEye.rotationPointZ = -8.25F;
@@ -101,9 +96,9 @@ public class ModelGuardian extends ModelBase
 
         if (entity != null)
         {
-            Vec3 vec3 = entity.getPositionEyes(0.0F);
-            Vec3 vec31 = entityIn.getPositionEyes(0.0F);
-            double d0 = vec3.yCoord - vec31.yCoord;
+            Vec3d vec3d = entity.getPositionEyes(0.0F);
+            Vec3d vec3d1 = entityIn.getPositionEyes(0.0F);
+            double d0 = vec3d.yCoord - vec3d1.yCoord;
 
             if (d0 > 0.0D)
             {
@@ -114,15 +109,15 @@ public class ModelGuardian extends ModelBase
                 this.guardianEye.rotationPointY = 1.0F;
             }
 
-            Vec3 vec32 = entityIn.getLook(0.0F);
-            vec32 = new Vec3(vec32.xCoord, 0.0D, vec32.zCoord);
-            Vec3 vec33 = (new Vec3(vec31.xCoord - vec3.xCoord, 0.0D, vec31.zCoord - vec3.zCoord)).normalize().rotateYaw(((float)Math.PI / 2F));
-            double d1 = vec32.dotProduct(vec33);
-            this.guardianEye.rotationPointX = MathHelper.sqrt_float((float)Math.abs(d1)) * 2.0F * (float)Math.signum(d1);
+            Vec3d vec3d2 = entityIn.getLook(0.0F);
+            vec3d2 = new Vec3d(vec3d2.xCoord, 0.0D, vec3d2.zCoord);
+            Vec3d vec3d3 = (new Vec3d(vec3d1.xCoord - vec3d.xCoord, 0.0D, vec3d1.zCoord - vec3d.zCoord)).normalize().rotateYaw(((float)Math.PI / 2F));
+            double d1 = vec3d2.dotProduct(vec3d3);
+            this.guardianEye.rotationPointX = MathHelper.sqrt((float)Math.abs(d1)) * 2.0F * (float)Math.signum(d1);
         }
 
         this.guardianEye.showModel = true;
-        float f2 = entityguardian.func_175471_a(f);
+        float f2 = entityguardian.getTailAnimation(f);
         this.guardianTail[0].rotateAngleY = MathHelper.sin(f2) * (float)Math.PI * 0.05F;
         this.guardianTail[1].rotateAngleY = MathHelper.sin(f2) * (float)Math.PI * 0.1F;
         this.guardianTail[1].rotationPointX = -1.5F;

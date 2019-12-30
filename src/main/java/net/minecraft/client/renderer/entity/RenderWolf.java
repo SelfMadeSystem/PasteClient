@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.model.ModelWolf;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.layers.LayerWolfCollar;
 import net.minecraft.entity.passive.EntityWolf;
@@ -8,13 +8,13 @@ import net.minecraft.util.ResourceLocation;
 
 public class RenderWolf extends RenderLiving<EntityWolf>
 {
-    private static final ResourceLocation wolfTextures = new ResourceLocation("textures/entity/wolf/wolf.png");
-    private static final ResourceLocation tamedWolfTextures = new ResourceLocation("textures/entity/wolf/wolf_tame.png");
-    private static final ResourceLocation anrgyWolfTextures = new ResourceLocation("textures/entity/wolf/wolf_angry.png");
+    private static final ResourceLocation WOLF_TEXTURES = new ResourceLocation("textures/entity/wolf/wolf.png");
+    private static final ResourceLocation TAMED_WOLF_TEXTURES = new ResourceLocation("textures/entity/wolf/wolf_tame.png");
+    private static final ResourceLocation ANRGY_WOLF_TEXTURES = new ResourceLocation("textures/entity/wolf/wolf_angry.png");
 
-    public RenderWolf(RenderManager renderManagerIn, ModelBase modelBaseIn, float shadowSizeIn)
+    public RenderWolf(RenderManager p_i47187_1_)
     {
-        super(renderManagerIn, modelBaseIn, shadowSizeIn);
+        super(p_i47187_1_, new ModelWolf(), 0.5F);
         this.addLayer(new LayerWolfCollar(this));
     }
 
@@ -27,16 +27,13 @@ public class RenderWolf extends RenderLiving<EntityWolf>
     }
 
     /**
-     * Actually renders the given argument. This is a synthetic bridge method, always casting down its argument and then
-     * handing it off to a worker function which does the actual work. In all probabilty, the class Render is generic
-     * (Render<T extends Entity>) and this method has signature public void doRender(T entity, double d, double d1,
-     * double d2, float f, float f1). But JAD is pre 1.5 so doe
+     * Renders the desired {@code T} type Entity.
      */
     public void doRender(EntityWolf entity, double x, double y, double z, float entityYaw, float partialTicks)
     {
         if (entity.isWolfWet())
         {
-            float f = entity.getBrightness(partialTicks) * entity.getShadingWhileWet(partialTicks);
+            float f = entity.getBrightness() * entity.getShadingWhileWet(partialTicks);
             GlStateManager.color(f, f, f);
         }
 
@@ -48,6 +45,13 @@ public class RenderWolf extends RenderLiving<EntityWolf>
      */
     protected ResourceLocation getEntityTexture(EntityWolf entity)
     {
-        return entity.isTamed() ? tamedWolfTextures : (entity.isAngry() ? anrgyWolfTextures : wolfTextures);
+        if (entity.isTamed())
+        {
+            return TAMED_WOLF_TEXTURES;
+        }
+        else
+        {
+            return entity.isAngry() ? ANRGY_WOLF_TEXTURES : WOLF_TEXTURES;
+        }
     }
 }

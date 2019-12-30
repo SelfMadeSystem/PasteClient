@@ -5,30 +5,36 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.client.AnvilConverterException;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IProgressUpdate;
+import net.minecraft.util.datafix.DataFixer;
+import net.minecraft.util.datafix.FixTypes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class SaveFormatOld implements ISaveFormat
 {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
 
     /**
      * Reference to the File object representing the directory for the world saves
      */
     protected final File savesDirectory;
+    protected final DataFixer dataFixer;
 
-    public SaveFormatOld(File p_i2147_1_)
+    public SaveFormatOld(File savesDirectoryIn, DataFixer dataFixerIn)
     {
-        if (!p_i2147_1_.exists())
+        this.dataFixer = dataFixerIn;
+
+        if (!savesDirectoryIn.exists())
         {
-            p_i2147_1_.mkdirs();
+            savesDirectoryIn.mkdirs();
         }
 
-        this.savesDirectory = p_i2147_1_;
+        this.savesDirectory = savesDirectoryIn;
     }
 
     /**
@@ -39,9 +45,9 @@ public class SaveFormatOld implements ISaveFormat
         return "Old Format";
     }
 
-    public List<SaveFormatComparator> getSaveList() throws AnvilConverterException
+    public List<WorldSummary> getSaveList() throws AnvilConverterException
     {
-        List<SaveFormatComparator> list = Lists.<SaveFormatComparator>newArrayList();
+        List<WorldSummary> list = Lists.newArrayList();
 
         for (int i = 0; i < 5; ++i)
         {
@@ -50,7 +56,7 @@ public class SaveFormatOld implements ISaveFormat
 
             if (worldinfo != null)
             {
-                list.add(new SaveFormatComparator(s, "", worldinfo.getLastTimePlayed(), worldinfo.getSizeOnDisk(), worldinfo.getGameType(), false, worldinfo.isHardcoreModeEnabled(), worldinfo.areCommandsAllowed()));
+                list.add(new WorldSummary(worldinfo, s, "", worldinfo.getSizeOnDisk(), false));
             }
         }
 
@@ -60,6 +66,8 @@ public class SaveFormatOld implements ISaveFormat
     public void flushCache()
     {
     }
+
+    @Nullable
 
     /**
      * Returns the world's WorldInfo object
@@ -78,34 +86,31 @@ public class SaveFormatOld implements ISaveFormat
 
             if (file2.exists())
             {
-                try
+                WorldInfo worldinfo = getWorldData(file2, this.dataFixer);
+
+                if (worldinfo != null)
                 {
-                    NBTTagCompound nbttagcompound2 = CompressedStreamTools.readCompressed(new FileInputStream(file2));
-                    NBTTagCompound nbttagcompound3 = nbttagcompound2.getCompoundTag("Data");
-                    return new WorldInfo(nbttagcompound3);
-                }
-                catch (Exception exception1)
-                {
-                    logger.error((String)("Exception reading " + file2), (Throwable)exception1);
+                    return worldinfo;
                 }
             }
 
             file2 = new File(file1, "level.dat_old");
+            return file2.exists() ? getWorldData(file2, this.dataFixer) : null;
+        }
+    }
 
-            if (file2.exists())
-            {
-                try
-                {
-                    NBTTagCompound nbttagcompound = CompressedStreamTools.readCompressed(new FileInputStream(file2));
-                    NBTTagCompound nbttagcompound1 = nbttagcompound.getCompoundTag("Data");
-                    return new WorldInfo(nbttagcompound1);
-                }
-                catch (Exception exception)
-                {
-                    logger.error((String)("Exception reading " + file2), (Throwable)exception);
-                }
-            }
-
+    @Nullable
+    public static WorldInfo getWorldData(File p_186353_0_, DataFixer dataFixerIn)
+    {
+        try
+        {
+            NBTTagCompound nbttagcompound = CompressedStreamTools.readCompressed(new FileInputStream(p_186353_0_));
+            NBTTagCompound nbttagcompound1 = nbttagcompound.getCompoundTag("Data");
+            return new WorldInfo(dataFixerIn.process(FixTypes.LEVEL, nbttagcompound1));
+        }
+        catch (Exception exception)
+        {
+            LOGGER.error("Exception reading {}", p_186353_0_, exception);
             return null;
         }
     }
@@ -139,9 +144,9 @@ public class SaveFormatOld implements ISaveFormat
         }
     }
 
-    public boolean func_154335_d(String p_154335_1_)
+    public boolean isNewLevelIdAcceptable(String saveName)
     {
-        File file1 = new File(this.savesDirectory, p_154335_1_);
+        File file1 = new File(this.savesDirectory, saveName);
 
         if (file1.exists())
         {
@@ -157,19 +162,18 @@ public class SaveFormatOld implements ISaveFormat
             }
             catch (Throwable throwable)
             {
-                logger.warn("Couldn\'t make new level", throwable);
+                LOGGER.warn("Couldn't make new level", throwable);
                 return false;
             }
         }
     }
 
     /**
-     * @args: Takes one argument - the name of the directory of the world to delete. @desc: Delete the world by deleting
-     * the associated directory recursively.
+     * Deletes a world directory.
      */
-    public boolean deleteWorldDirectory(String p_75802_1_)
+    public boolean deleteWorldDirectory(String saveName)
     {
-        File file1 = new File(this.savesDirectory, p_75802_1_);
+        File file1 = new File(this.savesDirectory, saveName);
 
         if (!file1.exists())
         {
@@ -177,18 +181,18 @@ public class SaveFormatOld implements ISaveFormat
         }
         else
         {
-            logger.info("Deleting level " + p_75802_1_);
+            LOGGER.info("Deleting level {}", saveName);
 
             for (int i = 1; i <= 5; ++i)
             {
-                logger.info("Attempt " + i + "...");
+                LOGGER.info("Attempt {}...", i);
 
                 if (deleteFiles(file1.listFiles()))
                 {
                     break;
                 }
 
-                logger.warn("Unsuccessful in deleting contents.");
+                LOGGER.warn("Unsuccessful in deleting contents.");
 
                 if (i < 5)
                 {
@@ -198,7 +202,6 @@ public class SaveFormatOld implements ISaveFormat
                     }
                     catch (InterruptedException var5)
                     {
-                        ;
                     }
                 }
             }
@@ -208,25 +211,23 @@ public class SaveFormatOld implements ISaveFormat
     }
 
     /**
-     * @args: Takes one argument - the list of files and directories to delete. @desc: Deletes the files and directory
-     * listed in the list recursively.
+     * Deletes a list of files and directories.
      */
     protected static boolean deleteFiles(File[] files)
     {
-        for (int i = 0; i < files.length; ++i)
+        for (File file1 : files)
         {
-            File file1 = files[i];
-            logger.debug("Deleting " + file1);
+            LOGGER.debug("Deleting {}", file1);
 
             if (file1.isDirectory() && !deleteFiles(file1.listFiles()))
             {
-                logger.warn("Couldn\'t delete directory " + file1);
+                LOGGER.warn("Couldn't delete directory {}", file1);
                 return false;
             }
 
             if (!file1.delete())
             {
-                logger.warn("Couldn\'t delete file " + file1);
+                LOGGER.warn("Couldn't delete file {}", file1);
                 return false;
             }
         }
@@ -239,10 +240,10 @@ public class SaveFormatOld implements ISaveFormat
      */
     public ISaveHandler getSaveLoader(String saveName, boolean storePlayerdata)
     {
-        return new SaveHandler(this.savesDirectory, saveName, storePlayerdata);
+        return new SaveHandler(this.savesDirectory, saveName, storePlayerdata, this.dataFixer);
     }
 
-    public boolean func_154334_a(String saveName)
+    public boolean isConvertible(String saveName)
     {
         return false;
     }
@@ -266,9 +267,14 @@ public class SaveFormatOld implements ISaveFormat
     /**
      * Return whether the given world can be loaded.
      */
-    public boolean canLoadWorld(String p_90033_1_)
+    public boolean canLoadWorld(String saveName)
     {
-        File file1 = new File(this.savesDirectory, p_90033_1_);
+        File file1 = new File(this.savesDirectory, saveName);
         return file1.isDirectory();
+    }
+
+    public File getFile(String p_186352_1_, String p_186352_2_)
+    {
+        return new File(new File(this.savesDirectory, p_186352_1_), p_186352_2_);
     }
 }

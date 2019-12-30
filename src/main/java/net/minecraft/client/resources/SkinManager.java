@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IImageBuffer;
 import net.minecraft.client.renderer.ImageBufferDownload;
@@ -37,11 +38,18 @@ public class SkinManager
         this.textureManager = textureManagerInstance;
         this.skinCacheDir = skinCacheDirectory;
         this.sessionService = sessionService;
-        this.skinCacheLoader = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.SECONDS).<GameProfile, Map<Type, MinecraftProfileTexture>>build(new CacheLoader<GameProfile, Map<Type, MinecraftProfileTexture>>()
+        this.skinCacheLoader = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.SECONDS).build(new CacheLoader<GameProfile, Map<Type, MinecraftProfileTexture>>()
         {
             public Map<Type, MinecraftProfileTexture> load(GameProfile p_load_1_) throws Exception
             {
-                return Minecraft.getMinecraft().getSessionService().getTextures(p_load_1_, false);
+                try
+                {
+                    return Minecraft.getMinecraft().getSessionService().getTextures(p_load_1_, false);
+                }
+                catch (Throwable var3)
+                {
+                    return Maps.newHashMap();
+                }
             }
         });
     }
@@ -49,15 +57,15 @@ public class SkinManager
     /**
      * Used in the Skull renderer to fetch a skin. May download the skin if it's not in the cache
      */
-    public ResourceLocation loadSkin(MinecraftProfileTexture profileTexture, Type p_152792_2_)
+    public ResourceLocation loadSkin(MinecraftProfileTexture profileTexture, Type textureType)
     {
-        return this.loadSkin(profileTexture, p_152792_2_, (SkinManager.SkinAvailableCallback)null);
+        return this.loadSkin(profileTexture, textureType, null);
     }
 
     /**
      * May download the skin if its not in the cache, can be passed a SkinManager#SkinAvailableCallback for handling
      */
-    public ResourceLocation loadSkin(final MinecraftProfileTexture profileTexture, final Type p_152789_2_, final SkinManager.SkinAvailableCallback skinAvailableCallback)
+    public ResourceLocation loadSkin(final MinecraftProfileTexture profileTexture, final Type textureType, @Nullable final SkinManager.SkinAvailableCallback skinAvailableCallback)
     {
         final ResourceLocation resourcelocation = new ResourceLocation("skins/" + profileTexture.getHash());
         ITextureObject itextureobject = this.textureManager.getTexture(resourcelocation);
@@ -66,14 +74,14 @@ public class SkinManager
         {
             if (skinAvailableCallback != null)
             {
-                skinAvailableCallback.skinAvailable(p_152789_2_, resourcelocation, profileTexture);
+                skinAvailableCallback.skinAvailable(textureType, resourcelocation, profileTexture);
             }
         }
         else
         {
             File file1 = new File(this.skinCacheDir, profileTexture.getHash().length() > 2 ? profileTexture.getHash().substring(0, 2) : "xx");
             File file2 = new File(file1, profileTexture.getHash());
-            final IImageBuffer iimagebuffer = p_152789_2_ == Type.SKIN ? new ImageBufferDownload() : null;
+            final IImageBuffer iimagebuffer = textureType == Type.SKIN ? new ImageBufferDownload() : null;
             ThreadDownloadImageData threaddownloadimagedata = new ThreadDownloadImageData(file2, profileTexture.getUrl(), DefaultPlayerSkin.getDefaultSkinLegacy(), new IImageBuffer()
             {
                 public BufferedImage parseUserSkin(BufferedImage image)
@@ -94,7 +102,7 @@ public class SkinManager
 
                     if (skinAvailableCallback != null)
                     {
-                        skinAvailableCallback.skinAvailable(p_152789_2_, resourcelocation, profileTexture);
+                        skinAvailableCallback.skinAvailable(textureType, resourcelocation, profileTexture);
                     }
                 }
             });
@@ -110,7 +118,7 @@ public class SkinManager
         {
             public void run()
             {
-                final Map<Type, MinecraftProfileTexture> map = Maps.<Type, MinecraftProfileTexture>newHashMap();
+                final Map<Type, MinecraftProfileTexture> map = Maps.newHashMap();
 
                 try
                 {
@@ -118,13 +126,12 @@ public class SkinManager
                 }
                 catch (InsecureTextureException var3)
                 {
-                    ;
                 }
 
                 if (map.isEmpty() && profile.getId().equals(Minecraft.getMinecraft().getSession().getProfile().getId()))
                 {
                     profile.getProperties().clear();
-                    profile.getProperties().putAll(Minecraft.getMinecraft().func_181037_M());
+                    profile.getProperties().putAll(Minecraft.getMinecraft().getProfileProperties());
                     map.putAll(SkinManager.this.sessionService.getTextures(profile, false));
                 }
 
@@ -134,12 +141,12 @@ public class SkinManager
                     {
                         if (map.containsKey(Type.SKIN))
                         {
-                            SkinManager.this.loadSkin((MinecraftProfileTexture)map.get(Type.SKIN), Type.SKIN, skinAvailableCallback);
+                            SkinManager.this.loadSkin(map.get(Type.SKIN), Type.SKIN, skinAvailableCallback);
                         }
 
                         if (map.containsKey(Type.CAPE))
                         {
-                            SkinManager.this.loadSkin((MinecraftProfileTexture)map.get(Type.CAPE), Type.CAPE, skinAvailableCallback);
+                            SkinManager.this.loadSkin(map.get(Type.CAPE), Type.CAPE, skinAvailableCallback);
                         }
                     }
                 });
@@ -149,11 +156,11 @@ public class SkinManager
 
     public Map<Type, MinecraftProfileTexture> loadSkinFromCache(GameProfile profile)
     {
-        return (Map)this.skinCacheLoader.getUnchecked(profile);
+        return this.skinCacheLoader.getUnchecked(profile);
     }
 
     public interface SkinAvailableCallback
     {
-        void skinAvailable(Type p_180521_1_, ResourceLocation location, MinecraftProfileTexture profileTexture);
+        void skinAvailable(Type typeIn, ResourceLocation location, MinecraftProfileTexture profileTexture);
     }
 }

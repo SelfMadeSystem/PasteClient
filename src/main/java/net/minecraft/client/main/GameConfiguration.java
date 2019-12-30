@@ -3,6 +3,9 @@ package net.minecraft.client.main;
 import com.mojang.authlib.properties.PropertyMap;
 import java.io.File;
 import java.net.Proxy;
+import javax.annotation.Nullable;
+import net.minecraft.client.resources.ResourceIndex;
+import net.minecraft.client.resources.ResourceIndexFolder;
 import net.minecraft.util.Session;
 
 public class GameConfiguration
@@ -45,12 +48,17 @@ public class GameConfiguration
         public final File assetsDir;
         public final String assetIndex;
 
-        public FolderInformation(File mcDataDirIn, File resourcePacksDirIn, File assetsDirIn, String assetIndexIn)
+        public FolderInformation(File mcDataDirIn, File resourcePacksDirIn, File assetsDirIn, @Nullable String assetIndexIn)
         {
             this.mcDataDir = mcDataDirIn;
             this.resourcePacksDir = resourcePacksDirIn;
             this.assetsDir = assetsDirIn;
             this.assetIndex = assetIndexIn;
+        }
+
+        public ResourceIndex getAssetsIndex()
+        {
+            return this.assetIndex == null ? new ResourceIndexFolder(this.assetsDir) : new ResourceIndex(this.assetsDir, this.assetIndex);
         }
     }
 
@@ -58,11 +66,13 @@ public class GameConfiguration
     {
         public final boolean isDemo;
         public final String version;
+        public final String versionType;
 
-        public GameInformation(boolean isDemoIn, String versionIn)
+        public GameInformation(boolean demo, String versionIn, String versionTypeIn)
         {
-            this.isDemo = isDemoIn;
+            this.isDemo = demo;
             this.version = versionIn;
+            this.versionType = versionTypeIn;
         }
     }
 
@@ -82,15 +92,15 @@ public class GameConfiguration
     {
         public final Session session;
         public final PropertyMap userProperties;
-        public final PropertyMap field_181172_c;
+        public final PropertyMap profileProperties;
         public final Proxy proxy;
 
-        public UserInformation(Session p_i46375_1_, PropertyMap p_i46375_2_, PropertyMap p_i46375_3_, Proxy p_i46375_4_)
+        public UserInformation(Session sessionIn, PropertyMap userPropertiesIn, PropertyMap profilePropertiesIn, Proxy proxyIn)
         {
-            this.session = p_i46375_1_;
-            this.userProperties = p_i46375_2_;
-            this.field_181172_c = p_i46375_3_;
-            this.proxy = p_i46375_4_;
+            this.session = sessionIn;
+            this.userProperties = userPropertiesIn;
+            this.profileProperties = profilePropertiesIn;
+            this.proxy = proxyIn;
         }
     }
 }
