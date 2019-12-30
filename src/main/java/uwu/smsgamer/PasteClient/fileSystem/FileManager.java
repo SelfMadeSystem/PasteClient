@@ -115,8 +115,6 @@ public class FileManager {
     public void load(File file) {
         if (!file.exists()) return;
 
-        //loadAlts();
-
         List<String> backupReasons = new ArrayList<>();
 
         try {
@@ -285,6 +283,7 @@ public class FileManager {
 
     public void saveAlts() {
         Filer alts = new Filer("Alts", ClientBase.CLIENT_NAME);
+        alts.clear();
         for (final Alt alt : AltManager.registry) {
             if (alt.getMask().equals("")) {
                 alts.write(alt.getUsername() + ":" + alt.getPassword());

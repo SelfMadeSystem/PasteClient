@@ -37,6 +37,11 @@ public class GuiAddAlt extends GuiScreen
             case 0: {
                 final AddAltThread login = new AddAltThread(this.username.getText(), this.password.getText());
                 login.start();
+                try {
+                    ClientBase.INSTANCE.fileManager.saveAlts();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
             }
             case 1: {
