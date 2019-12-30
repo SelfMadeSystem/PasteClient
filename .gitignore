@@ -24,6 +24,9 @@ hs_err_pid*
 
 run/*
 .gradle/*
+.idea/*
+build/*
+gradle/*
 *.mca
 *.gz
 *.xml
