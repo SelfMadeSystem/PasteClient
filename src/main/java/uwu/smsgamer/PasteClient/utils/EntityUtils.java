@@ -36,7 +36,7 @@ public class EntityUtils {
                     notABot = true;
                 //}
                 boolean notTeammate = true;
-                if (!Targets.teams && en instanceof EntityPlayer && (en.getDisplayName().toString().contains("§a") || !en.getDisplayName().toString().contains("§c"))) {
+                if (!Targets.teams && en instanceof EntityPlayer && (en.getDisplayName().toString().contains("\u00A7a") || !en.getDisplayName().toString().contains("\u00A7c"))) {
                     notTeammate = false;
                 }
                 if (en.getName().equals(player.getName()) || !ModeUtils.isValidForAura(en) || !notABot || (closestEntity != null && player.getDistanceToEntity(en) >= player.getDistanceToEntity(closestEntity))) {

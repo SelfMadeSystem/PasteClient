@@ -3,7 +3,6 @@ package uwu.smsgamer.PasteClient.modules.modules.combat;
 import com.darkmagician6.eventapi.EventTarget;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.math.AxisAlignedBB;
 import uwu.smsgamer.PasteClient.ClientBase;
 import uwu.smsgamer.PasteClient.events.QuickEvent;
 import uwu.smsgamer.PasteClient.fileSystem.Filer;
@@ -18,7 +17,7 @@ import uwu.smsgamer.PasteClient.valuesystem.NumberValue;
 import java.util.Arrays;
 import java.util.Random;
 
-public class AimBot3 extends Module {
+public class AimBot4 extends Module {
     private BooleanValue aimSave = new BooleanValue("AimSavingValues", false);
     private BooleanValue aimSaveAbs = new BooleanValue("AimSaveAbs", false);
 
@@ -55,8 +54,8 @@ public class AimBot3 extends Module {
     private BooleanValue aimDebug2 = new BooleanValue("AimDebug2", false);
     private BooleanValue aimDebug3 = new BooleanValue("AimDebug3", false);
 
-    public AimBot3() {
-        super("AimBot3", "Aimbot that aims, but stops when aimed. 2/10 detectable", ModuleCategory.COMBAT);
+    public AimBot4() {
+        super("AimBot4", "Variant on AimBot3 that aims a bit differently. 1.8/10 detectable", ModuleCategory.COMBAT);
     }
 
     /*public boolean getBool(String smth) {

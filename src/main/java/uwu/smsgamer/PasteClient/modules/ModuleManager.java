@@ -43,7 +43,7 @@ public class ModuleManager {
         addModule(new AimBot1());
         //addModule(new AimBot2());
         addModule(new AimBot3());
-        //addModule(new AimBot4());
+        addModule(new AimBot4());
         addModule(new AutoClicker());
 
         addModule(new SetbackDetector());
