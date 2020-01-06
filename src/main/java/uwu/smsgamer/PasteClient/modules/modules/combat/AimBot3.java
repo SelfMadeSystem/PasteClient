@@ -6,6 +6,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.math.AxisAlignedBB;
 import uwu.smsgamer.PasteClient.ClientBase;
 import uwu.smsgamer.PasteClient.events.QuickEvent;
+import uwu.smsgamer.PasteClient.events.UpdateEvent;
 import uwu.smsgamer.PasteClient.fileSystem.Filer;
 import uwu.smsgamer.PasteClient.modules.Module;
 import uwu.smsgamer.PasteClient.modules.ModuleCategory;
@@ -72,7 +73,7 @@ public class AimBot3 extends Module {
     private static int line;
 
     @EventTarget
-    public void quick(QuickEvent event) {
+    public void update(UpdateEvent event) {
         if (!getState())
             return;
         EntityPlayerSP p = mc.player;
@@ -94,7 +95,7 @@ public class AimBot3 extends Module {
                         ChatUtils.info("You need to be near an entity.");
                         return;
                     }
-                    float[] r = RUtils.limitAngleChange(new float[]{p.rotationYaw, p.rotationPitch}, RUtils.getNeededRotations(RUtils.getCenter(target.getCollisionBoundingBox()), true), 1, 1);
+                    float[] r = RUtils.limitAngleChange(new float[]{p.rotationYaw, p.rotationPitch}, RUtils.getNeededRotations(RUtils.getCenter(target.getEntityBoundingBox()), true), 1, 1);
                     r[0] = p.rotationYaw - r[0];
                     r[1] = p.rotationPitch - r[1];
                     float yaw;
@@ -198,6 +199,12 @@ public class AimBot3 extends Module {
             //ChatUtils.info(aimbot.read().size() + " " + line);
             if (aimbot.read().size() <= line)
                 line = 0;
+        }
+        if (p.rotationPitch < -90) {
+            p.rotationPitch = -90;
+        }
+        if (p.rotationPitch > 90) {
+            p.rotationPitch = 90;
         }
     }
 

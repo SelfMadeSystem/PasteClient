@@ -5,6 +5,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.EntityLivingBase;
 import uwu.smsgamer.PasteClient.ClientBase;
 import uwu.smsgamer.PasteClient.events.QuickEvent;
+import uwu.smsgamer.PasteClient.events.UpdateEvent;
 import uwu.smsgamer.PasteClient.fileSystem.Filer;
 import uwu.smsgamer.PasteClient.modules.Module;
 import uwu.smsgamer.PasteClient.modules.ModuleCategory;
@@ -71,7 +72,7 @@ public class AimBot4 extends Module {
     private static int line;
 
     @EventTarget
-    public void quick(QuickEvent event) {
+    public void update(UpdateEvent event) {
         if (!getState())
             return;
         EntityPlayerSP p = mc.player;
@@ -93,7 +94,7 @@ public class AimBot4 extends Module {
                         ChatUtils.info("You need to be near an entity.");
                         return;
                     }
-                    float[] r = RUtils.limitAngleChange(new float[]{p.rotationYaw, p.rotationPitch}, RUtils.getNeededRotations(RUtils.getCenter(target.getCollisionBoundingBox()), true), 1, 1);
+                    float[] r = RUtils.limitAngleChange(new float[]{p.rotationYaw, p.rotationPitch}, RUtils.getNeededRotations(RUtils.getCenter(target.getEntityBoundingBox()), true), 1, 1);
                     r[0] = p.rotationYaw - r[0];
                     r[1] = p.rotationPitch - r[1];
                     float yaw;
@@ -126,16 +127,6 @@ public class AimBot4 extends Module {
                 return;
             float yaw = Float.parseFloat(ln.split(":")[0]);
             float pitch = Float.parseFloat(ln.split(":")[1]);
-            float[] r;
-            try {
-                r = RUtils.limitAngleChange(new float[]{p.rotationYaw, p.rotationPitch}, RUtils.getNeededRotations(RUtils.getCenter(target.getEntityBoundingBox()), true), 1, 1);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Murder me, please...");
-                return;
-            }
-            r[0] = p.rotationYaw - r[0];
-            r[1] = p.rotationPitch - r[1];
             int times = 0;
             while (Math.abs(yaw) > aimYawMax.getObject()) {
                 yaw *= (aimYawBDivide.getObject() + (Math.random() * aimYawBDivideRand.getObject() - (aimYawBDivideRand.getObject() / 2)));
@@ -167,36 +158,45 @@ public class AimBot4 extends Module {
 
             yaw *= (aimYawATimes.getObject() + (Math.random() * aimYawATimesRand.getObject() - (aimYawATimesRand.getObject() / 2)));
             pitch *= (aimPitchATimes.getObject() + (Math.random() * aimPitchATimesRand.getObject() - (aimPitchATimesRand.getObject() / 2)));
-            if (aimDebug1.getObject())
-                acm(Arrays.toString(r));
             if (aimDebug2.getObject())
                 acm(pitch + " " + yaw);
-            if (r[0] > 0 && aimYaw.getObject() || (!aimYaw.getObject() && new Random().nextBoolean())) {
+            float[] r = RUtils.limitAngleChange(new float[]{p.rotationYaw, p.rotationPitch}, RUtils.getNeededRotations(RUtils.getCenter(target.getEntityBoundingBox()), true), yaw, pitch);
+            r[0] = p.rotationYaw - r[0];
+            r[1] = p.rotationPitch - r[1];
+            if(aimDebug1.getObject())
+                acm(r[0] + " " + r[1]);
+            if (aimYaw.getObject() || (!aimYaw.getObject() && new Random().nextBoolean())) {
                 if (aimYawNeg.getObject())
-                    p.rotationYaw += yaw;
+                    p.rotationYaw += r[0];
                 else
-                    p.rotationYaw -= yaw;
+                    p.rotationYaw -= r[0];
             } else {
                 if (aimYawNeg.getObject())
-                    p.rotationYaw -= yaw;
+                    p.rotationYaw -= r[0];
                 else
-                    p.rotationYaw += yaw;
+                    p.rotationYaw += r[0];
             }
-            if (r[1] > 0 && aimPitch.getObject() || (!aimPitch.getObject() && new Random().nextBoolean())) {
+            if (aimPitch.getObject() || (!aimPitch.getObject() && new Random().nextBoolean())) {
                 if (aimPitchNeg.getObject())
-                    p.rotationPitch += pitch;
+                    p.rotationPitch += r[1];
                 else
-                    p.rotationPitch -= pitch;
+                    p.rotationPitch -= r[1];
             } else {
                 if (aimPitchNeg.getObject())
-                    p.rotationPitch -= pitch;
+                    p.rotationPitch -= r[1];
                 else
-                    p.rotationPitch += pitch;
+                    p.rotationPitch += r[1];
             }
             line++;
             //ChatUtils.info(aimbot.read().size() + " " + line);
             if (aimbot.read().size() <= line)
                 line = 0;
+        }
+        if (p.rotationPitch < -90) {
+            p.rotationPitch = -90;
+        }
+        if (p.rotationPitch > 90) {
+            p.rotationPitch = 90;
         }
     }
 
