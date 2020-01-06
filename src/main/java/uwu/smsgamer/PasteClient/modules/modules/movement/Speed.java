@@ -25,8 +25,11 @@ public class Speed extends Module {
         if(!getState())
             return;
         p = mc.player;
+        if(!mc.gameSettings.keyBindForward.isKeyDown())
+            return;
         switch (mode.getObject()){
             case 0:
+                bhop();
                 break;
         }
         if(strafeMode.getObject() > 0){
@@ -36,7 +39,9 @@ public class Speed extends Module {
 
     private void bhop(){
         if(p.onGround){
-
+            MovementUtils.xzMotion(speed1.getObject(), 2);
+        }else{
+            MovementUtils.xzMotion(speed2.getObject(), 2);
         }
     }
 }
