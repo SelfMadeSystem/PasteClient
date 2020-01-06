@@ -1,5 +1,6 @@
 package net.minecraft.block;
 
+import com.darkmagician6.eventapi.EventManager;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.List;
@@ -49,6 +50,7 @@ import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import uwu.smsgamer.PasteClient.events.LandEvent;
 
 public class Block
 {
@@ -1025,7 +1027,11 @@ public class Block
      */
     public void onLanded(World worldIn, Entity entityIn)
     {
+        double originalMotion = entityIn.motionY;
         entityIn.motionY = 0.0D;
+        LandEvent ev = new LandEvent(worldIn, entityIn, entityIn.motionY, originalMotion);
+        EventManager.call(ev);
+        entityIn.motionY = ev.newMotion;
     }
 
     public ItemStack getItem(World worldIn, BlockPos pos, IBlockState state)

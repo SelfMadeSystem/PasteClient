@@ -288,11 +288,13 @@ public abstract class AbstractSkeleton extends EntityMob implements IRangedAttac
 
     public boolean isSwingingArms()
     {
-        return this.dataManager.get(SWINGING_ARMS).booleanValue();
+        try {
+            return this.dataManager.get(SWINGING_ARMS);
+        }catch (Exception e){return false;}
     }
 
     public void setSwingingArms(boolean swingingArms)
     {
-        this.dataManager.set(SWINGING_ARMS, Boolean.valueOf(swingingArms));
+        this.dataManager.set(SWINGING_ARMS, swingingArms);
     }
 }
