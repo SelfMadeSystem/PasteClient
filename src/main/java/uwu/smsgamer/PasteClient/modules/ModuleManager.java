@@ -49,6 +49,7 @@ public class ModuleManager {
         addModule(new SetbackDetector());
         addModule(new Step());
         addModule(new Flight());
+        addModule(new Speed());
 
         addModule(new ESP());
     }
