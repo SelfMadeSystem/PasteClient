@@ -15,13 +15,10 @@ import com.darkmagician6.eventapi.EventTarget;
 import uwu.smsgamer.PasteClient.ClientBase;
 import uwu.smsgamer.PasteClient.events.KeyEvent;
 import uwu.smsgamer.PasteClient.modules.modules.combat.*;
-import uwu.smsgamer.PasteClient.modules.modules.misc.PacketListener;
-import uwu.smsgamer.PasteClient.modules.modules.misc.Targets;
-import uwu.smsgamer.PasteClient.modules.modules.movement.SetbackDetector;
-import uwu.smsgamer.PasteClient.modules.modules.movement.Step;
-import uwu.smsgamer.PasteClient.modules.modules.render.ClickGUIModule;
-import uwu.smsgamer.PasteClient.modules.modules.render.ESP;
-import uwu.smsgamer.PasteClient.modules.modules.render.HUD;
+import uwu.smsgamer.PasteClient.modules.modules.fUn.Boinger;
+import uwu.smsgamer.PasteClient.modules.modules.misc.*;
+import uwu.smsgamer.PasteClient.modules.modules.movement.*;
+import uwu.smsgamer.PasteClient.modules.modules.render.*;
 import uwu.smsgamer.PasteClient.scripting.ScriptModule;
 
 import java.util.ArrayList;
@@ -39,6 +36,9 @@ public class ModuleManager {
     public void addModules() {
         addModule(new Targets());
         addModule(new PacketListener());
+        addModule(new Flagger());
+
+        addModule(new Boinger());
 
         addModule(new AimBot1());
         //addModule(new AimBot2());
@@ -48,6 +48,7 @@ public class ModuleManager {
 
         addModule(new SetbackDetector());
         addModule(new Step());
+        addModule(new Flight());
 
         addModule(new ESP());
     }
