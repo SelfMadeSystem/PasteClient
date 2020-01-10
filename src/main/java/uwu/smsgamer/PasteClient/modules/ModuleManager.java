@@ -44,11 +44,13 @@ public class ModuleManager {
         //addModule(new AimBot2());
         addModule(new AimBot3());
         addModule(new AimBot4());
+        addModule(new AimCheckA());
         addModule(new AutoClicker());
 
         addModule(new SetbackDetector());
         addModule(new Step());
         addModule(new Flight());
+        addModule(new Clip());
         addModule(new Speed());
 
         addModule(new ESP());
