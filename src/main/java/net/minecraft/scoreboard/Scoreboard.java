@@ -298,14 +298,15 @@ public class Scoreboard
      */
     public void removeTeam(ScorePlayerTeam playerTeam)
     {
-        this.teams.remove(playerTeam.getRegisteredName());
+        try {
+            this.teams.remove(playerTeam.getRegisteredName());
 
-        for (String s : playerTeam.getMembershipCollection())
-        {
-            this.teamMemberships.remove(s);
-        }
+            for (String s : playerTeam.getMembershipCollection()) {
+                this.teamMemberships.remove(s);
+            }
 
-        this.broadcastTeamRemove(playerTeam);
+            this.broadcastTeamRemove(playerTeam);
+        } catch (Exception e){e.printStackTrace();}
     }
 
     /**

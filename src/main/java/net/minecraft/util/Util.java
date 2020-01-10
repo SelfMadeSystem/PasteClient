@@ -47,13 +47,9 @@ public class Util
             task.run();
             return task.get();
         }
-        catch (ExecutionException executionexception)
+        catch (ExecutionException | InterruptedException executionexception)
         {
             logger.fatal("Error executing task", executionexception);
-        }
-        catch (InterruptedException interruptedexception)
-        {
-            logger.fatal("Error executing task", interruptedexception);
         }
 
         return null;
