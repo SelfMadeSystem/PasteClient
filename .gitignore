@@ -23,7 +23,7 @@
 hs_err_pid*
 
 run/*
-.gradle/*
+#.gradle/*
 .idea/*
 build/*
 gradle/*
