@@ -11,7 +11,16 @@
 package uwu.smsgamer.PasteClient.modules;
 
 import net.minecraft.client.Minecraft;
+import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
+import uwu.smsgamer.PasteClient.ClientBase;
+import uwu.smsgamer.PasteClient.command.Command;
+import uwu.smsgamer.PasteClient.utils.ChatUtils;
+import uwu.smsgamer.PasteClient.valuesystem.Value;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Module {
     protected static final Minecraft mc = Minecraft.getMinecraft();

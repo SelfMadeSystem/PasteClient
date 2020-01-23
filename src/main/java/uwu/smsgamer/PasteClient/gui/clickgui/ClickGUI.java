@@ -12,10 +12,7 @@ import uwu.smsgamer.PasteClient.gui.clickgui.layout.GridLayout;
 import uwu.smsgamer.PasteClient.modules.Module;
 import uwu.smsgamer.PasteClient.modules.ModuleCategory;
 import uwu.smsgamer.PasteClient.utils.fontRenderer.GlyphPageFontRenderer;
-import uwu.smsgamer.PasteClient.valuesystem.BooleanValue;
-import uwu.smsgamer.PasteClient.valuesystem.ModeValue;
-import uwu.smsgamer.PasteClient.valuesystem.NumberValue;
-import uwu.smsgamer.PasteClient.valuesystem.Value;
+import uwu.smsgamer.PasteClient.valuesystem.*;
 
 import java.awt.*;
 import java.io.IOException;
@@ -93,7 +90,7 @@ public class ClickGUI extends GuiScreen {
                 if (values != null) {
                     for (Value value : values) {
                         if (value instanceof BooleanValue) {
-                            settingPane.addComponent(new uwu.smsgamer.PasteClient.gui.clickgui.components.Label(renderer, value.getName()));
+                            settingPane.addComponent(new Label(renderer, value.getName()));
 
                             CheckBox cb;
 
@@ -102,7 +99,7 @@ public class ClickGUI extends GuiScreen {
                             onRenderListeners.add(() -> cb.setSelected(((BooleanValue) value).getObject()));
                         }
                         if (value instanceof ModeValue) {
-                            settingPane.addComponent(new uwu.smsgamer.PasteClient.gui.clickgui.components.Label(renderer, value.getName()));
+                            settingPane.addComponent(new Label(renderer, value.getName()));
 
                             ComboBox cb;
 
@@ -149,6 +146,10 @@ public class ClickGUI extends GuiScreen {
                             });
 
                             onRenderListeners.add(() -> cb.setValue(((Number) value.getObject()).doubleValue()));
+                        }
+                        if(value instanceof StringValue){
+                            settingPane.addComponent(new Label(renderer, value.getName()));
+                            settingPane.addComponent(new Label(renderer, ((StringValue) value).getObject()));
                         }
                     }
                 }

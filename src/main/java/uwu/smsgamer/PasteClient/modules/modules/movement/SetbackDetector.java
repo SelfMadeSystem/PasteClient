@@ -26,15 +26,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SetbackDetector extends Module {
-    private List<Vec3d> lastLocations = new ArrayList<>();
-    private List<Long> lastSetBacks = new ArrayList<>();
+    public List<Vec3d> lastLocations = new ArrayList<>();
+    public List<Long> lastSetBacks = new ArrayList<>();
 
     public SetbackDetector() {
         super("FlagDetector", "Detects flags", ModuleCategory.MOVEMENT);
     }
 
     @EventTarget
-    private void onMove(MotionUpdateEvent event) {
+    public void onMove(MotionUpdateEvent event) {
         if (event.getEventType() != EventType.POST) return;
 
         List<Long> remove = new ArrayList<>();
@@ -58,7 +58,7 @@ public class SetbackDetector extends Module {
     }
 
     @EventTarget
-    private void onPacket(PacketEvent event) {
+    public void onPacket(PacketEvent event) {
         if (event.getPacket() instanceof SPacketPlayerPosLook) {
             SPacketPlayerPosLook p = (SPacketPlayerPosLook) event.getPacket();
             boolean setback = lastLocations.stream().anyMatch(loc -> p.getX() == loc.xCoord && p.getY() == loc.yCoord && p.getZ() == loc.zCoord);

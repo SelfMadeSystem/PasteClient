@@ -41,11 +41,11 @@ public class Potion
     private double effectiveness;
     private boolean beneficial;
 
-    @Nullable
 
     /**
      * Gets a Potion from the potion registry using a numeric Id.
      */
+    @Nullable
     public static Potion getPotionById(int potionID)
     {
         return REGISTRY.getObjectById(potionID);

@@ -1,309 +1,320 @@
 package uwu.smsgamer.PasteClient.utils;
 
+import com.darkmagician6.eventapi.EventTarget;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.Packet;
+import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
+import uwu.smsgamer.PasteClient.events.PacketEvent;
+import uwu.smsgamer.PasteClient.events.UpdateEvent;
 
+import java.util.Random;
+
+/**
+ * LiquidBounce Hacked Client
+ * A minecraft forge injection client using Mixin
+ *
+ * @author CCBlueX
+ * @game Minecraft
+ */
 public final class RUtils {
-    public static boolean lookChanged;
-    public static float targetYaw;
-    public static float targetPitch;
-    public static boolean keepRotation = false;
-    public static float[] lastLook = new float[]{0.0F, 0.0F};
+
+    private static Random random = new Random();
+
     private static int keepLength;
-    private static double x = Math.random();
-    private static double y = Math.random();
-    private static double z = Math.random();
 
-    public RUtils() {
+    public static Rotation targetRotation;
+    public static Rotation serverRotation;
+
+    public static boolean keepCurrentRotation = false;
+
+    private static double x = random.nextDouble();
+    private static double y = random.nextDouble();
+    private static double z = random.nextDouble();
+
+    /**
+     * Face target with bow
+     *
+     * @param target your enemy
+     * @param silent client side rotations
+     * @param predict predict new enemy position
+     * @param predictSize predict size of predict
+     */
+    /*public static void faceBow(final Entity target, final boolean silent, final boolean predict, final float predictSize) {
+        Minecraft mc = Minecraft.getMinecraft();
+        final EntityPlayerSP player = mc.player;
+
+        final double posX = target.posX + (predict ? (target.posX - target.prevPosX) * predictSize : 0) - (player.posX + (predict ? (player.posX - player.prevPosX) : 0));
+        final double posY = target.getEntityBoundingBox().minY + (predict ? (target.getEntityBoundingBox().minY - target.prevPosY) * predictSize : 0) + target.getEyeHeight() - 0.15 - (player.getEntityBoundingBox().minY + (predict ? (player.posY - player.prevPosY) : 0)) - player.getEyeHeight();
+        final double posZ = target.posZ + (predict ? (target.posZ - target.prevPosZ) * predictSize : 0) - (player.posZ + (predict ? (player.posZ - player.prevPosZ) : 0));
+        final double posSqrt = Math.sqrt(posX * posX + posZ * posZ);
+
+        float velocity = LiquidBounce.moduleManager.getModule(FastBow.class).getState() ? 1F : player.getItemInUseDuration() / 20F;
+        velocity = (velocity * velocity + velocity * 2) / 3;
+
+        if(velocity > 1) velocity = 1;
+
+        final Rotation rotation = new Rotation(
+                (float) (Math.atan2(posZ, posX) * 180 / Math.PI) - 90,
+                (float) -Math.toDegrees(Math.atan((velocity * velocity - Math.sqrt(velocity * velocity * velocity * velocity - 0.006F * (0.006F * (posSqrt * posSqrt) + 2 * posY * (velocity * velocity)))) / (0.006F * posSqrt)))
+        );
+
+        if(silent)
+            setTargetRotation(rotation);
+        else
+            limitAngleChange(new Rotation(player.rotationYaw, player.rotationPitch), rotation,10 +
+                    new Random().nextInt(6)).toPlayer(mc.player);
+    }*/
+
+    /**
+     * Translate vec to rotation
+     *
+     * @param vec     target vec
+     * @param predict predict new location of your body
+     * @return rotation
+     */
+    public static Rotation toRotation(final Vec3d vec, final boolean predict) {
+        Minecraft mc = Minecraft.getMinecraft();
+        final Vec3d eyesPos = new Vec3d(mc.player.posX, mc.player.getEntityBoundingBox().minY + mc.player.getEyeHeight(), mc.player.posZ);
+
+        if (predict) eyesPos.addVector(mc.player.motionX, mc.player.motionY, mc.player.motionZ);
+
+        final double diffX = vec.xCoord - eyesPos.xCoord;
+        final double diffY = vec.yCoord - eyesPos.yCoord;
+        final double diffZ = vec.zCoord - eyesPos.zCoord;
+
+        return new Rotation(MathHelper.wrapDegrees(
+                (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90F
+        ), MathHelper.wrapDegrees(
+                (float) (-Math.toDegrees(Math.atan2(diffY, Math.sqrt(diffX * diffX + diffZ * diffZ))))
+        ));
     }
 
-    public static void faceBlockPacket(BlockPos blockPos) {
-        EntityPlayerSP p = Minecraft.getMinecraft().player;
-        if (blockPos != null) {
-            double diffX = (double) blockPos.getX() + 0.5D - p.posX;
-            double diffY = (double) blockPos.getY() + 0.5D - (p.getEntityBoundingBox().minY + (double) p.getEyeHeight());
-            double diffZ = (double) blockPos.getZ() + 0.5D - p.posZ;
-            double sqrt = Math.sqrt(diffX * diffX + diffZ * diffZ);
-            float yaw = (float) (Math.atan2(diffZ, diffX) * 180.0D / 3.141592653589793D) - 90.0F;
-            float pitch = (float) (-(Math.atan2(diffY, sqrt) * 180.0D / 3.141592653589793D));
-            setTargetRotation(p.rotationYaw + MathHelper.wrapDegrees(yaw - p.rotationYaw), p.rotationPitch + MathHelper.wrapDegrees(pitch - p.rotationPitch));
-        }
+    /**
+     * Get the center of a box
+     *
+     * @param bb your box
+     * @return center of box
+     */
+    public static Vec3d getCenter(final AxisAlignedBB bb) {
+        return new Vec3d(bb.minX + (bb.maxX - bb.minX) * 0.5, bb.minY + (bb.maxY - bb.minY) * 0.5, bb.minZ + (bb.maxZ - bb.minZ) * 0.5);
     }
 
-    /*public static void faceBow(Entity target, boolean silent, boolean predict, float predictSize) {
-
-        double posX = target.x + (predict ? (target.x - target.prevX) * (double)predictSize : 0.0D) - (p.posX + (predict ? p.posX - p.prevX : 0.0D));
-        double posY = target.getEntityBoundingBox().minY + (predict ? (target.getEntityBoundingBox().minY - target.prevY) * (double)predictSize : 0.0D) + (double)target.getEyeHeight() - 0.15D - (p.getEntityBoundingBox().minY + (predict ? p.field_70163_u - p.prevY : 0.0D)) - (double)p.getEyeHeight();
-        double posZ = target.z + (predict ? (target.z - target.prevZ) * (double)predictSize : 0.0D) - (p.posZ + (predict ? p.posZ - p.prevZ : 0.0D));
-        double sqrt = Math.sqrt(posX * posX + posZ * posZ);
-        float velocity = (float)p.getItemInUseCount() / 20.0F;
-        velocity = (velocity * velocity + velocity * 2.0F) / 3.0F;
-        if (velocity > 1.0F) {
-            velocity = 1.0F;
+    /**
+     * Search good center
+     *
+     * @param bb           enemy box
+     * @param outborder    outborder option
+     * @param random       random option
+     * @param predict      predict option
+     * @param throughWalls throughWalls option
+     * @return center
+     */
+    public static VecRot searchCenter(final AxisAlignedBB bb, final boolean outborder, final boolean random, final boolean predict, final boolean throughWalls) {
+        if (outborder) {
+            final Vec3d vec3 = new Vec3d(bb.minX + (bb.maxX - bb.minX) * (x * 0.3 + 1.0), bb.minY + (bb.maxY - bb.minY) * (y * 0.3 + 1.0), bb.minZ + (bb.maxZ - bb.minZ) * (z * 0.3 + 1.0));
+            return new VecRot(vec3, toRotation(vec3, predict));
         }
 
-        float yaw = (float)(Math.atan2(posZ, posX) * 180.0D / 3.141592653589793D) - 90.0F;
-        float pitch = (float)(-Math.toDegrees(Math.atan(((double)(velocity * velocity) - Math.sqrt((double)(velocity * velocity * velocity * velocity) - 0.006000000052154064D * (0.006000000052154064D * sqrt * sqrt + 2.0D * posY * (double)(velocity * velocity)))) / (0.006000000052154064D * sqrt))));
-        float[] rotations;
-        if (velocity < 0.1F) {
-            rotations = getNeededRotations(getCenter(target.getEntityBoundingBox()), true);
-            yaw = rotations[0];
-            pitch = rotations[1];
-        }
+        final Vec3d randomVec = new Vec3d(bb.minX + (bb.maxX - bb.minX) * x * 0.8, bb.minY + (bb.maxY - bb.minY) * y * 0.8, bb.minZ + (bb.maxZ - bb.minZ) * z * 0.8);
+        final Rotation randomRotation = toRotation(randomVec, predict);
 
-        if (silent) {
-            setTargetRotation(yaw, pitch);
-        } else {
-            rotations = limitAngleChange(new float[]{p.rotationYaw, p.rotationPitch}, new float[]{yaw, pitch}, (float)(10 + RandomUtils.getRandom().nextInt(6)));
-            if (rotations == null) {
-                return;
+        VecRot vecRotation = null;
+
+        for (double xSearch = 0.15D; xSearch < 0.85D; xSearch += 0.1D) {
+            for (double ySearch = 0.15D; ySearch < 1D; ySearch += 0.1D) {
+                for (double zSearch = 0.15D; zSearch < 0.85D; zSearch += 0.1D) {
+                    final Vec3d vec3 = new Vec3d(bb.minX + (bb.maxX - bb.minX) * xSearch, bb.minY + (bb.maxY - bb.minY) * ySearch, bb.minZ + (bb.maxZ - bb.minZ) * zSearch);
+                    final Rotation rotation = toRotation(vec3, predict);
+
+                    if (throughWalls || isVisible(vec3)) {
+                        final VecRot currentVec = new VecRot(vec3, rotation);
+
+                        if (vecRotation == null || (random ? getRotationDifference(currentVec.getRotation(), randomRotation) < getRotationDifference(vecRotation.getRotation(), randomRotation) : getRotationDifference(currentVec.getRotation()) < getRotationDifference(vecRotation.getRotation())))
+                            vecRotation = currentVec;
+                    }
+                }
             }
-
-            p.rotationYaw = rotations[0];
-            p.rotationPitch = rotations[1];
         }
 
-    }*/
-
-    /*public static boolean isLookingAtTarget(Entity target, boolean predict){
-        boolean looking = false;
-        AxisAlignedBB bb = target.getEntityBoundingBox();
-        EntityPlayerSP p = Minecraft.getMinecraft().player;
-        Vec3d eyesPos = getEyesPos();
-
-        float yaw = MathHelper.wrapDegrees(p.rotationYaw);
-        float pitch = p.rotationPitch;
-
-        Vec3d max = new Vec3d(bb.maxX, bb.maxY, bb.maxZ);
-        Vec3d min = new Vec3d(bb.minX, bb.minY, bb.minZ);
-
-        //ChatUtils.noPXMessage(yaw+" "+getNeededRotations(getCenter(bb), predict)[0]);
-
-        if(getNeededRotations(getCenter(bb), predict)[0]<0 && getNeededRotations(getCenter(bb), predict)[0]>-90) {
-            double minDiffX = min.x - eyesPos.x;
-            double minDiffY = min.y - eyesPos.y;
-            double minDiffZ = max.z - eyesPos.z;
-            double minDiffXZ = Math.sqrt(minDiffX * minDiffX + minDiffZ * minDiffZ);
-            float minYaw = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(minDiffZ, minDiffX)) - 90.0F);
-            float minPitch = (float) -Math.toDegrees(Math.atan2(minDiffY, minDiffXZ));
-
-            double maxDiffX = max.x - eyesPos.x;
-            double maxDiffY = max.y - eyesPos.y;
-            double maxDiffZ = min.z - eyesPos.z;
-            double maxDiffXZ = Math.sqrt(maxDiffX * maxDiffX + maxDiffZ * maxDiffZ);
-            float maxYaw = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(maxDiffZ, maxDiffX)) - 90.0F);
-            float maxPitch = (float) -Math.toDegrees(Math.atan2(maxDiffY, maxDiffXZ));
-
-            if (yaw <= minYaw && yaw >= maxYaw && pitch <= minPitch && pitch >= maxPitch)
-                looking = true;
-
-            //ChatUtils.noPXMessage(minYaw + " " + maxYaw + " " + yaw + "\n" + (yaw <= minYaw) + " " + (yaw >= maxYaw) + "\n"
-                    //+ maxPitch + " " + minPitch + " " + pitch + "\n" + (pitch <= minPitch) + " " + (pitch >= maxPitch));'
-            //ChatUtils.noPXMessage("min max");
-        }
-
-        if(getNeededRotations(getCenter(bb), predict)[0]<90 && getNeededRotations(getCenter(bb), predict)[0]>0) {
-            double minDiffX = min.x - eyesPos.x;
-            double minDiffY = min.y - eyesPos.y;
-            double minDiffZ = min.z - eyesPos.z;
-            double minDiffXZ = Math.sqrt(minDiffX * minDiffX + minDiffZ * minDiffZ);
-            float minYaw = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(minDiffZ, minDiffX)) - 90.0F);
-            float minPitch = (float) -Math.toDegrees(Math.atan2(minDiffY, minDiffXZ));
-
-            double maxDiffX = max.x - eyesPos.x;
-            double maxDiffY = max.y - eyesPos.y;
-            double maxDiffZ = max.z - eyesPos.z;
-            double maxDiffXZ = Math.sqrt(maxDiffX * maxDiffX + maxDiffZ * maxDiffZ);
-            float maxYaw = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(maxDiffZ, maxDiffX)) - 90.0F);
-            float maxPitch = (float) -Math.toDegrees(Math.atan2(maxDiffY, maxDiffXZ));
-
-            if (yaw <= minYaw && yaw >= maxYaw && pitch <= minPitch && pitch >= maxPitch)
-                looking = true;
-
-            //ChatUtils.noPXMessage(minYaw + " " + maxYaw + " " + yaw + "\n" + (yaw <= minYaw) + " " + (yaw >= maxYaw) + "\n"
-                    //+ maxPitch + " " + minPitch + " " + pitch + "\n" + (pitch <= minPitch) + " " + (pitch >= maxPitch));
-            //ChatUtils.noPXMessage("min min");
-        }
-
-        if(getNeededRotations(getCenter(bb), predict)[0]<180 && getNeededRotations(getCenter(bb), predict)[0]>90) {
-            double minDiffX = max.x - eyesPos.x;
-            double minDiffY = min.y - eyesPos.y;
-            double minDiffZ = min.z - eyesPos.z;
-            double minDiffXZ = Math.sqrt(minDiffX * minDiffX + minDiffZ * minDiffZ);
-            float minYaw = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(minDiffZ, minDiffX)) - 90.0F);
-            float minPitch = (float) -Math.toDegrees(Math.atan2(minDiffY, minDiffXZ));
-
-            double maxDiffX = min.x - eyesPos.x;
-            double maxDiffY = max.y - eyesPos.y;
-            double maxDiffZ = max.z - eyesPos.z;
-            double maxDiffXZ = Math.sqrt(maxDiffX * maxDiffX + maxDiffZ * maxDiffZ);
-            float maxYaw = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(maxDiffZ, maxDiffX)) - 90.0F);
-            float maxPitch = (float) -Math.toDegrees(Math.atan2(maxDiffY, maxDiffXZ));
-
-            if (yaw <= minYaw && yaw >= maxYaw && pitch <= minPitch && pitch >= maxPitch)
-                looking = true;
-
-            //ChatUtils.noPXMessage(minYaw + " " + maxYaw + " " + yaw + "\n" + (yaw <= minYaw) + " " + (yaw >= maxYaw) + "\n"
-                    //+ maxPitch + " " + minPitch + " " + pitch + "\n" + (pitch <= minPitch) + " " + (pitch >= maxPitch));
-            //ChatUtils.noPXMessage("max min");
-        }
-
-        if(getNeededRotations(getCenter(bb), predict)[0]<-90 && getNeededRotations(getCenter(bb), predict)[0]>-180) {
-            double minDiffX = max.x - eyesPos.x;
-            double minDiffY = min.y - eyesPos.y;
-            double minDiffZ = max.z - eyesPos.z;
-            double minDiffXZ = Math.sqrt(minDiffX * minDiffX + minDiffZ * minDiffZ);
-            float minYaw = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(minDiffZ, minDiffX)) - 90.0F);
-            float minPitch = (float) -Math.toDegrees(Math.atan2(minDiffY, minDiffXZ));
-
-            double maxDiffX = min.x - eyesPos.x;
-            double maxDiffY = max.y - eyesPos.y;
-            double maxDiffZ = min.z - eyesPos.z;
-            double maxDiffXZ = Math.sqrt(maxDiffX * maxDiffX + maxDiffZ * maxDiffZ);
-            float maxYaw = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(maxDiffZ, maxDiffX)) - 90.0F);
-            float maxPitch = (float) -Math.toDegrees(Math.atan2(maxDiffY, maxDiffXZ));
-
-            if (yaw <= minYaw && yaw >= maxYaw && pitch <= minPitch && pitch >= maxPitch)
-                looking = true;
-
-            //ChatUtils.noPXMessage(minYaw + " " + maxYaw + " " + yaw + "\n" + (yaw <= minYaw) + " " + (yaw >= maxYaw) + "\n"
-                    //+ maxPitch + " " + minPitch + " " + pitch + "\n" + (pitch <= minPitch) + " " + (pitch >= maxPitch));
-            //ChatUtils.noPXMessage("max max");
-        }
-
-        // -153 -130
-        // -2.24 37
-
-        // 120 112
-        // -2.8 7.75
-
-        return looking;
-    }*/
-
-    public static float[] getTargetRotation(Entity entity) {
-        EntityPlayerSP p = Minecraft.getMinecraft().player;
-        return entity != null && p != null ? getNeededRotations(getRandomCenter(entity.getEntityBoundingBox(), false), true) : null;
+        return vecRotation;
     }
 
-    public static float[] getNeededRotations(Vec3d vec, boolean predict) {
-        EntityPlayerSP p = Minecraft.getMinecraft().player;
-        Vec3d eyesPos = getEyesPos();
-        if (predict) {
-            eyesPos.addVector(p.motionX, p.motionY, p.motionZ);
-        }
+    /**
+     * Calculate difference between the client rotation and your entity
+     *
+     * @param entity your entity
+     * @return difference between rotation
+     */
+    public static double getRotationDifference(final Entity entity) {
+        Minecraft mc = Minecraft.getMinecraft();
+        final Rotation rotation = toRotation(getCenter(entity.getEntityBoundingBox()), true);
 
-        double diffX = vec.xCoord - eyesPos.xCoord;
-        double diffY = vec.yCoord - eyesPos.yCoord;
-        double diffZ = vec.zCoord - eyesPos.zCoord;
-        double diffXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
-        float yaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90.0F;
-        float pitch = (float) (-Math.toDegrees(Math.atan2(diffY, diffXZ)));
-        return new float[]{MathHelper.wrapDegrees(yaw), MathHelper.wrapDegrees(pitch)};
+        return getRotationDifference(rotation, new Rotation(mc.player.rotationYaw, mc.player.rotationPitch));
     }
 
-    public static Vec3d getCenter(AxisAlignedBB bb) {
-        return new Vec3d(bb.minX + (bb.maxX - bb.minX) * 0.5D, bb.minY + (bb.maxY - bb.minY) * 0.5D, bb.minZ + (bb.maxZ - bb.minZ) * 0.5D);
+    /**
+     * Calculate difference between the server rotation and your rotation
+     *
+     * @param rotation your rotation
+     * @return difference between rotation
+     */
+    public static double getRotationDifference(final Rotation rotation) {
+        return serverRotation == null ? 0D : getRotationDifference(rotation, serverRotation);
     }
 
-    public static Vec3d getTop(AxisAlignedBB bb) {
-        return new Vec3d(bb.minX + (bb.maxX - bb.minX) * 0.5D, bb.maxY, bb.minZ + (bb.maxZ - bb.minZ) * 0.5D);
+    /**
+     * Calculate difference between two rotations
+     *
+     * @param a rotation
+     * @param b rotation
+     * @return difference between rotation
+     */
+    public static double getRotationDifference(final Rotation a, final Rotation b) {
+        return Math.hypot(getAngleDifference(a.yaw, b.yaw), a.pitch - b.pitch);
     }
 
-    public static Vec3d getBottom(AxisAlignedBB bb) {
-        return new Vec3d(bb.minX + (bb.maxX - bb.minX) * 0.5D, bb.minY, bb.minZ + (bb.maxZ - bb.minZ) * 0.5D);
+    /**
+     * Limit your rotation using a turn speed
+     *
+     * @param currentRotation your current rotation
+     * @param targetRotation  your goal rotation
+     * @param turnSpeed       your turn speed
+     * @return limited rotation
+     */
+    @NotNull
+    public static Rotation limitAngleChange(final Rotation currentRotation, final Rotation targetRotation, final float turnSpeed) {
+        final float yawDifference = getAngleDifference(targetRotation.yaw, currentRotation.yaw);
+        final float pitchDifference = getAngleDifference(targetRotation.pitch, currentRotation.pitch);
+
+        return new Rotation(
+                currentRotation.yaw + (yawDifference > turnSpeed ? turnSpeed : Math.max(yawDifference, -turnSpeed)),
+                currentRotation.pitch + (pitchDifference > turnSpeed ? turnSpeed : Math.max(pitchDifference, -turnSpeed)
+                ));
     }
 
-    public static Vec3d getHead(Entity target) {
-        AxisAlignedBB bb = target.getEntityBoundingBox();
-        return new Vec3d(bb.minX + (bb.maxX - bb.minX) * 0.5D, bb.minY + target.getEyeHeight(), bb.minZ + (bb.maxZ - bb.minZ) * 0.5D);
+    /**
+     * Calculate difference between two angle points
+     *
+     * @param a angle point
+     * @param b angle point
+     * @return difference between angle points
+     */
+    private static float getAngleDifference(final float a, final float b) {
+        return ((((a - b) % 360F) + 540F) % 360F) - 180F;
     }
 
-    public static Vec3d getCustom(Entity target, double add) {
-        AxisAlignedBB bb = target.getEntityBoundingBox();
-        return new Vec3d(bb.minX + (bb.maxX - bb.minX) * 0.5D, bb.minY + add, bb.minZ + (bb.maxZ - bb.minZ) * 0.5D);
+    /**
+     * Calculate rotation to vector
+     *
+     * @param rotation your rotation
+     * @return target vector
+     */
+    public static Vec3d getVectorForRotation(final Rotation rotation) {
+        float yawCos = MathHelper.cos(-rotation.yaw * 0.017453292F - (float) Math.PI);
+        float yawSin = MathHelper.sin(-rotation.yaw * 0.017453292F - (float) Math.PI);
+        float pitchCos = -MathHelper.cos(-rotation.pitch * 0.017453292F);
+        float pitchSin = MathHelper.sin(-rotation.pitch * 0.017453292F);
+        return new Vec3d(yawSin * pitchCos, pitchSin, yawCos * pitchCos);
     }
 
-    public static Vec3d getRandomCenter(AxisAlignedBB bb, boolean outBorder) {
-        return outBorder ? new Vec3d(bb.minX + (bb.maxX - bb.minX) * (x * 0.3D + 1.0D), bb.minY + (bb.maxY - bb.minY) * (y * 0.3D + 1.0D), bb.minZ + (bb.maxZ - bb.minZ) * (z * 0.3D + 1.0D)) : new Vec3d(bb.minX + (bb.maxX - bb.minX) * x * 0.8D, bb.minY + (bb.maxY - bb.minY) * y * 0.8D, bb.minZ + (bb.maxZ - bb.minZ) * z * 0.8D);
+    /**
+     * Allows you to check if your crosshair is over your target entity
+     *
+     * @param targetEntity       your target entity
+     * @param blockReachDistance your reach
+     * @return if crosshair is over target
+     */
+    public static boolean isFaced(final Entity targetEntity, double blockReachDistance) {
+        return RaycastUtils.raycastEntity(blockReachDistance, entity -> entity == targetEntity) != null;
     }
 
-    public static double getRotationDifference(Entity entity) {
-        float[] rotations = getTargetRotation(entity);
-        return rotations == null ? 0.0D : getRotationDifference(rotations[0], rotations[1]);
+    /**
+     * Allows you to check if your enemy is behind a wall
+     */
+    public static boolean isVisible(final Vec3d vec3) {
+        Minecraft mc = Minecraft.getMinecraft();
+        final Vec3d eyesPos = new Vec3d(mc.player.posX, mc.player.getEntityBoundingBox().minY + mc.player.getEyeHeight(), mc.player.posZ);
+
+        return mc.world.rayTraceBlocks(eyesPos, vec3) == null;
     }
 
-    public static double getRotationDifference(float yaw, float pitch) {
-        return Math.sqrt(Math.pow(Math.abs(angleDifference(lastLook[0] % 360.0F, yaw)), 2.0D) + Math.pow(Math.abs(angleDifference(lastLook[1], pitch)), 2.0D));
-    }
+    /**
+     * Handle minecraft tick
+     *
+     * @param event Tick event
+     */
+    @EventTarget
+    public void onUpdate(UpdateEvent event) {
+        if (targetRotation != null) {
+            keepLength--;
 
-    public static float[] limitAngleChange(float[] current, float[] target, float turnSpeedYaw, float turnSpeedPitch) {
-        double yawDifference = angleDifference(target[0], current[0]);
-        double pitchDifference = angleDifference(target[1], current[1]);
-        current[0] = (float) ((double) current[0] + (yawDifference > (double) turnSpeedYaw ? (double) turnSpeedYaw : (Math.max(yawDifference, -turnSpeedYaw))));
-        current[1] = (float) ((double) current[1] + (pitchDifference > (double) turnSpeedPitch ? (double) turnSpeedPitch : (Math.max(pitchDifference, -turnSpeedPitch))));
-        return current;
-    }
-
-    private static double angleDifference(double a, double b) {
-        return ((a - b) % 360.0D + 540.0D) % 360.0D - 180.0D;
-    }
-
-    public static Vec3d getEyesPos() {
-        EntityPlayerSP p = Minecraft.getMinecraft().player;
-        return new Vec3d(p.posX, p.getEntityBoundingBox().minY + (double) p.getEyeHeight(), p.posZ);
-    }
-
-    //public static boolean isFaced(Entity targetEntity, double blockReachDistance) {
-    //    return RaycastUtils.raycastEntities(blockReachDistance).contains(targetEntity);
-    //}
-
-    public static Vec3d getVectorForRotation(float pitch, float yaw) {
-        float f = MathHelper.cos(-yaw * 0.017453292F - 3.1415927F);
-        float f1 = MathHelper.sin(-yaw * 0.017453292F - 3.1415927F);
-        float f2 = -MathHelper.cos(-pitch * 0.017453292F);
-        float f3 = MathHelper.sin(-pitch * 0.017453292F);
-        return new Vec3d(f1 * f2, f3, f * f2);
-    }
-
-    public static void setTargetRotation(float yaw, float pitch) {
-        if (!Double.isNaN(yaw) && !Double.isNaN(pitch)) {
-            targetYaw = yaw;
-            targetPitch = pitch;
-            lookChanged = true;
-            keepLength = 0;
-        }
-    }
-
-    public static void reset() {
-        lookChanged = false;
-        keepLength = 0;
-        targetYaw = 0.0F;
-        targetPitch = 0.0F;
-    }
-
-    public void onUpdate() {
-        if (lookChanged) {
-            ++keepLength;
-            if (keepLength > 15) {
+            if (keepLength <= 0)
                 reset();
+        }
+
+        if (random.nextGaussian() > 0.8D) x = Math.random();
+        if (random.nextGaussian() > 0.8D) y = Math.random();
+        if (random.nextGaussian() > 0.8D) z = Math.random();
+    }
+
+    /**
+     * Handle packet
+     *
+     * @param event Packet Event
+     */
+    @EventTarget
+    public void onPacket(final PacketEvent event) {
+        Minecraft mc = Minecraft.getMinecraft();
+        final Packet packet = event.getPacket();
+
+        if (packet instanceof CPacketPlayer) {
+            final CPacketPlayer packetPlayer = (CPacketPlayer) packet;
+
+            if (targetRotation != null && !keepCurrentRotation && (targetRotation.yaw != serverRotation.yaw || targetRotation.pitch != serverRotation.pitch)) {
+                packetPlayer.yaw = targetRotation.yaw;
+                packetPlayer.pitch = targetRotation.pitch;
+                packetPlayer.rotating = true;
             }
-        }
 
-        if (RandomUtils.getRandom().nextGaussian() * 100.0D > 80.0D) {
-            x = Math.random();
+            if (packetPlayer.rotating) serverRotation = new Rotation(packetPlayer.yaw, packetPlayer.pitch);
         }
+    }
 
-        if (RandomUtils.getRandom().nextGaussian() * 100.0D > 80.0D) {
-            y = Math.random();
-        }
+    /**
+     * Set your target rotation
+     *
+     * @param rotation your target rotation
+     */
+    public static void setTargetRotation(final Rotation rotation) {
+        setTargetRotation(rotation, 0);
+    }
 
-        if (RandomUtils.getRandom().nextGaussian() * 100.0D > 80.0D) {
-            z = Math.random();
-        }
+    /**
+     * Set your target rotation
+     *
+     * @param rotation your target rotation
+     */
+    public static void setTargetRotation(final Rotation rotation, final int keepLength) {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (Double.isNaN(rotation.yaw) || Double.isNaN(rotation.pitch)
+                || rotation.pitch > 90 || rotation.pitch < -90)
+            return;
+
+        rotation.fixedSensitivity(mc.gameSettings.mouseSensitivity);
+        targetRotation = rotation;
+        RUtils.keepLength = keepLength;
+    }
+
+    /**
+     * Reset your target rotation
+     */
+    public static void reset() {
+        keepLength = 0;
+        targetRotation = null;
     }
 }

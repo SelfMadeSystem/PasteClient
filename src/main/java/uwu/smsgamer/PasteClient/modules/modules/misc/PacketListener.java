@@ -12,9 +12,9 @@ import uwu.smsgamer.PasteClient.utils.ChatUtils;
 import uwu.smsgamer.PasteClient.valuesystem.BooleanValue;
 
 public class PacketListener extends Module {
-    private BooleanValue send = new BooleanValue("Send", true);
-    private BooleanValue receive = new BooleanValue("Receive", true);
-    private BooleanValue packetPlayerInfo = new BooleanValue("PacketPlayer Info", true);
+    public BooleanValue send = new BooleanValue("Send", true);
+    public BooleanValue receive = new BooleanValue("Receive", true);
+    public BooleanValue packetPlayerInfo = new BooleanValue("PacketPlayer Info", true);
     public PacketListener() {
         super("PacketListener", "Listens to packets. Used for debugging.", ModuleCategory.MISC);
     }

@@ -12,8 +12,10 @@ import uwu.smsgamer.PasteClient.modules.ModuleCategory;
 import uwu.smsgamer.PasteClient.utils.ChatUtils;
 import uwu.smsgamer.PasteClient.valuesystem.ModeValue;
 import uwu.smsgamer.PasteClient.valuesystem.NumberValue;
+import uwu.smsgamer.PasteClient.valuesystem.StringValue;
 
 public class Boinger extends Module {
+    private StringValue testValue = new StringValue("TestValue", "Much OwO");
     private NumberValue<Integer> amount = new NumberValue<>("Amount", 1, 1, 100);
     private NumberValue<Double> customValue = new NumberValue<>("CustomValue", 0.42, 0d, 5d);
     private ModeValue mode = new ModeValue("Mode", "Legit", "Legit", "Boing", "SlimeBlock", "Bed", "Mineplex", "Custom");

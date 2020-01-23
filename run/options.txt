@@ -11,13 +11,13 @@ bobView:true
 anaglyph3d:false
 maxFps:120
 fboEnable:true
-difficulty:0
+difficulty:2
 fancyGraphics:true
 ao:2
 renderClouds:true
 resourcePacks:[]
 incompatibleResourcePacks:[]
-lastServer:mc.etheral.net
+lastServer:Henriks9.ovh
 lang:en_us
 chatVisibility:0
 chatColors:true
@@ -36,7 +36,7 @@ overrideWidth:0
 overrideHeight:0
 heldItemTooltips:true
 chatHeightFocused:1.0
-chatHeightUnfocused:0.44366196
+chatHeightUnfocused:1.0
 chatScale:1.0
 chatWidth:1.0
 mipmapLevels:4

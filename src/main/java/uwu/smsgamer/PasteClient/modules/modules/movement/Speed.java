@@ -5,28 +5,30 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import uwu.smsgamer.PasteClient.events.UpdateEvent;
 import uwu.smsgamer.PasteClient.modules.Module;
 import uwu.smsgamer.PasteClient.modules.ModuleCategory;
+import uwu.smsgamer.PasteClient.utils.ChatUtils;
 import uwu.smsgamer.PasteClient.utils.MovementUtils;
 import uwu.smsgamer.PasteClient.valuesystem.ModeValue;
 import uwu.smsgamer.PasteClient.valuesystem.NumberValue;
 
 public class Speed extends Module {
-    private ModeValue mode = new ModeValue("Mode", "BHop", "BHop", "OnGround");
-    private ModeValue strafeMode = new ModeValue("StrafeMode", "None", "None", "Normal", "Exact");
-    private NumberValue<Double> speed1 = new NumberValue<>("Speed1", 1d, 0d, 10d);
-    private NumberValue<Double> speed2 = new NumberValue<>("Speed2", 1d, 0d, 10d);
+    public ModeValue mode = new ModeValue("Mode", "BHop", "BHop", "OnGround");
+    public ModeValue strafeMode = new ModeValue("StrafeMode", "None", "None", "Normal", "Exact");
+    public NumberValue<Double> speed1 = new NumberValue<>("Speed1", 1d, 0d, 10d);
     public Speed() {
         super("Speed", "Makes you go faster than legit.", ModuleCategory.MOVEMENT);
     }
 
-    private EntityPlayerSP p;
+    public EntityPlayerSP p;
 
     @EventTarget
     public void onUpdate(UpdateEvent event){
         if(!getState())
             return;
         p = mc.player;
+        //ChatUtils.info(mc.gameSettings.keyBindForward.isKeyDown()+"");
         if(!mc.gameSettings.keyBindForward.isKeyDown())
             return;
+        //ChatUtils.info(mode.getObject()+"");
         switch (mode.getObject()){
             case 0:
                 bhop();
@@ -39,9 +41,8 @@ public class Speed extends Module {
 
     private void bhop(){
         if(p.onGround){
+            p.jump();
             MovementUtils.xzMotion(speed1.getObject(), 2);
-        }else{
-            MovementUtils.xzMotion(speed2.getObject(), 2);
         }
     }
 }

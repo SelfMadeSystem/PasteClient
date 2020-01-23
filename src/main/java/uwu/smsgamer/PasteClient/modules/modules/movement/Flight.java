@@ -7,11 +7,15 @@ import uwu.smsgamer.PasteClient.events.UpdateEvent;
 import uwu.smsgamer.PasteClient.modules.Module;
 import uwu.smsgamer.PasteClient.modules.ModuleCategory;
 import uwu.smsgamer.PasteClient.utils.ChatUtils;
+import uwu.smsgamer.PasteClient.utils.MovementUtils;
 import uwu.smsgamer.PasteClient.valuesystem.BooleanValue;
 import uwu.smsgamer.PasteClient.valuesystem.ModeValue;
 import uwu.smsgamer.PasteClient.valuesystem.NumberValue;
 
 public class Flight extends Module {
+    public NumberValue<Integer> Ticks = new NumberValue<>("Ticks", 1, 1, 20);
+    public NumberValue<Float> Speed = new NumberValue<>("Speed", 1.0f, 0.0f, 5.0f);
+    public NumberValue<Float> Timer = new NumberValue<>("Timer", 1.0f, 0.1f, 10.0f);
     public BooleanValue hypixelPacket = new BooleanValue("HypixelPacket", true);
     public BooleanValue hypixelGroundPackets = new BooleanValue("HypixelGroundPackets", true);
     public BooleanValue hypixelGround = new BooleanValue("HypixelGround", true);
@@ -21,10 +25,10 @@ public class Flight extends Module {
     public NumberValue<Integer> yTicks = new NumberValue<>("YTicks", 1, 1, 20);
     public NumberValue<Double> yTimes = new NumberValue<>("YTimes", 1.0, -2.0, 2.0);
     public NumberValue<Double> yAdd = new NumberValue<>("YAdd", 0.0, -2.0, 2.0);
-    public ModeValue mode = new ModeValue("Mode", "Creative", "Creative", "Hypixel", "MotionY");
+    public ModeValue mode = new ModeValue("Mode", "Creative", "Creative", "Hypixel", "MotionY", "Motion");
 
-    private EntityPlayerSP p;
-    private int ticks;
+    public EntityPlayerSP p;
+    public int ticks;
 
     public Flight() {
         super("Flight", "Lets you fly while in survival.", ModuleCategory.MOVEMENT);
@@ -32,11 +36,8 @@ public class Flight extends Module {
 
     @Override
     public void onEnable() {
-        switch (mode.getObject()) {
-            case 2:
-                ChatUtils.info("It's not my fault if your game crashes.");
-                break;
-        }
+        if (p == null)
+            return;
     }
 
     @Override
@@ -62,6 +63,7 @@ public class Flight extends Module {
         ticks++;
         if (!getState())
             return;
+        mc.timer.offset = 1000 / (Timer.getObject() * 20);
 
         switch (mode.getObject()) {
             case 0:
@@ -73,17 +75,37 @@ public class Flight extends Module {
             case 2:
                 motionY();
                 break;
+            case 3:
+                motion();
+                break;
         }
     }
 
-    private void motionY() {
+    public void motion(){
+        if(ticks % Ticks.getObject() == 0){
+            if(mc.gameSettings.keyBindJump.isKeyDown() == mc.gameSettings.keyBindSneak.isKeyDown()){
+                if(mc.gameSettings.keyBindForward.isKeyDown())
+                    MovementUtils.xzMotion(Speed.getObject(), 0);
+                MovementUtils.yMotion(0, 0);
+            }else if(mc.gameSettings.keyBindJump.isKeyDown()){
+                MovementUtils.yMotion(Speed.getObject(), 0);
+            }else if(mc.gameSettings.keyBindSneak.isKeyDown()){
+                MovementUtils.yMotion(-Speed.getObject(), 0);
+            }
+        }else{
+            MovementUtils.xzMotion(0, 0);
+            MovementUtils.yMotion(0, 0);
+        }
+    }
+
+    public void motionY() {
         if(ticks % yTicks.getObject() == 0){
             p.motionY += yAdd.getObject();
             p.motionY *= yTimes.getObject();
         }
     }
 
-    private void creative() {
+    public void creative() {
         p.capabilities.isFlying = true;
         p.sendPlayerAbilities();
         p.sendPlayerAbilities();
@@ -93,7 +115,7 @@ public class Flight extends Module {
         p.sendPlayerAbilities();
     }
 
-    private void hypixel() {
+    public void hypixel() {
         p.motionY = 0;
         //ChatUtils.info((hypixelValue.getObject() / (Math.pow(10, hypixelDivision.getObject())))+" "+hypixelValue.getObject()+" "+(Math.pow(10, hypixelDivision.getObject())));
         //ChatUtils.info(p.posY + "");

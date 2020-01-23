@@ -15,23 +15,23 @@ import uwu.smsgamer.PasteClient.valuesystem.ModeValue;
 import uwu.smsgamer.PasteClient.valuesystem.NumberValue;
 
 public class Flagger extends Module {
-    private BooleanValue ground = new BooleanValue("Ground", false);
-    private NumberValue<Integer> delay = new NumberValue<>("Delay", 1, 1, 100);
-    private NumberValue<Integer> amount = new NumberValue<>("Amount", 1, 1, 100);
-    private NumberValue<Integer> amountE = new NumberValue<>("AmountExponent", 1, 1, 100);
-    private ModeValue mode = new ModeValue("Mode", "Y Packet", "Y Packet", "XZ Packet", "XYZ Packet", "SendPlayerAbilities",
+    public BooleanValue ground = new BooleanValue("Ground", false);
+    public NumberValue<Integer> delay = new NumberValue<>("Delay", 1, 1, 100);
+    public NumberValue<Integer> amount = new NumberValue<>("Amount", 1, 1, 100);
+    public NumberValue<Integer> amountE = new NumberValue<>("AmountExponent", 1, 1, 100);
+    public ModeValue mode = new ModeValue("Mode", "Y Packet", "Y Packet", "XZ Packet", "XYZ Packet", "SendPlayerAbilities",
             "Y Spoof", "XZ Spoof", "XYZ Spoof");
-    private ModeValue yMode = new ModeValue("YMode", "IMAX_VALUE", "IMAX_VALUE", "IMIN_VALUE", "Static", "Relative");
-    private NumberValue<Double> yOffset = new NumberValue<>("YOffset", -255d, -255d, 255d);
-    private ModeValue xzMode = new ModeValue("XZMode", "IMAX_VALUE", "IMAX_VALUE", "IMIN_VALUE", "Static", "Relative");
-    private NumberValue<Double> xOffset = new NumberValue<>("XOffset", -255d, -255d, 255d);
-    private NumberValue<Double> zOffset = new NumberValue<>("ZOffset", -255d, -255d, 255d);
+    public ModeValue yMode = new ModeValue("YMode", "IMAX_VALUE", "IMAX_VALUE", "IMIN_VALUE", "Static", "Relative");
+    public NumberValue<Double> yOffset = new NumberValue<>("YOffset", -255d, -255d, 255d);
+    public ModeValue xzMode = new ModeValue("XZMode", "IMAX_VALUE", "IMAX_VALUE", "IMIN_VALUE", "Static", "Relative");
+    public NumberValue<Double> xOffset = new NumberValue<>("XOffset", -255d, -255d, 255d);
+    public NumberValue<Double> zOffset = new NumberValue<>("ZOffset", -255d, -255d, 255d);
 
     public Flagger() {
         super("Flagger", "Makes you flag on anticheats.", ModuleCategory.MISC);
     }
 
-    private int ticks;
+    public int ticks;
 
     @EventTarget
     public void onUpdate(UpdateEvent event) {

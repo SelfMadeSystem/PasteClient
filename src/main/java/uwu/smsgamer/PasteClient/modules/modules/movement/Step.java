@@ -12,9 +12,9 @@ import uwu.smsgamer.PasteClient.valuesystem.ModeValue;
 import uwu.smsgamer.PasteClient.valuesystem.NumberValue;
 
 public class Step extends Module {
-    private NumberValue<Float> height = new NumberValue<>("StepHeight", 1f, 0f, 10f);
-    private ModeValue mode = new ModeValue("Mode", "PacketNew", "PacketOld", "PacketNew", "NCP", "OldAAC", "Jump");
-    private NumberValue<Integer> amount = new NumberValue<>("Amount", 7, 0, 10);
+    public NumberValue<Float> height = new NumberValue<>("StepHeight", 1f, 0f, 10f);
+    public ModeValue mode = new ModeValue("Mode", "PacketNew", "PacketOld", "PacketNew", "NCP", "OldAAC", "Jump");
+    public NumberValue<Integer> amount = new NumberValue<>("Amount", 7, 0, 10);
 
     public Step() {
         super("Step", "Steps up more than half a block. DOESN'T FUCKING WORK FOR SOME REASON.", ModuleCategory.MOVEMENT);

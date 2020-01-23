@@ -50,12 +50,9 @@ public class ScriptModule extends Module {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(ev.values);
         for (Object value : ev.values){
-            System.out.println(((Value)value).getName());
             ClientBase.INSTANCE.valueManager.addObject(this.name, value);
         }
-        System.out.println(ClientBase.INSTANCE.valueManager.getAllValuesFrom(this.name));
     }
 
     @Override

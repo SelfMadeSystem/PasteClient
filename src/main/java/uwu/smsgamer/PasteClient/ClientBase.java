@@ -10,11 +10,13 @@
 
 package uwu.smsgamer.PasteClient;
 
+import com.darkmagician6.eventapi.EventManager;
 import uwu.smsgamer.PasteClient.AltManager.AltManager;
 import uwu.smsgamer.PasteClient.scripting.ScriptManager;
 import uwu.smsgamer.PasteClient.command.CommandManager;
 import uwu.smsgamer.PasteClient.fileSystem.FileManager;
 import uwu.smsgamer.PasteClient.modules.ModuleManager;
+import uwu.smsgamer.PasteClient.utils.RUtils;
 import uwu.smsgamer.PasteClient.valuesystem.ValueManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,6 +66,8 @@ public class ClientBase {
     }
 
     public void startClient() {
+        EventManager.register(new RUtils());
+
         scriptManager = new ScriptManager();
         fileManager = new FileManager();
         valueManager = new ValueManager();
@@ -73,10 +77,10 @@ public class ClientBase {
 
         fileManager.loadScripts();
 
-        commandManager.addCommands();
-
         moduleManager.addModules();
         moduleManager.addLast();
+
+        commandManager.addCommands();
 
         fileManager.load();
     }
