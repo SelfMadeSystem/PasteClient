@@ -2,7 +2,6 @@ plugins {
     id 'java'
 }
 
-
 group 'uwu.smsgamer'
 version '1.0'
 
